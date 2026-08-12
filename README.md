@@ -12,11 +12,18 @@ Modernise-TradeMaster is a first-of-its kind, best-in-class open-source platform
 
 It covers the full pipeline for the design, implementation, evaluation and deployment of RL-based trading methods. It contains: 1) a toolkit for efficient data collection, preprocessing and analysis; 2) a high-fidelity data-driven market simulator for mainstream QT tasks (e.g., portfolio management and algorithmic trading); 3) standard implementations of over 10 novel FinRL methods; 4) a systematic evaluation benchmark called PRUDEX-Compass.
 
+<div align="center">
+
+**[Live Dashboard — https://sphere-seminars-trademarks-tba.trycloudflare.com](https://sphere-seminars-trademarks-tba.trycloudflare.com)** (no sign-in)
+
+</div>
+
 ## Outline
 
 - [Modernise-TradeMaster: An RL Platform for Trading](#modernise-trademaster-an-rl-platform-for-trading)
   - [Outline](#outline)
   - [Overview](#overview)
+  - [Dashboard](#dashboard)
   - [Installation](#installation)
   - [Tutorial](#tutorial)
   - [Toolkit](#toolkit)
@@ -26,7 +33,6 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
   - [External Data Source](#external-data-source)
   - [How to Use Your Own Data](#how-to-use-your-own-data)
   - [File Structure](#file-structure)
-  - [Dashboard](#dashboard)
   - [Publications](#publications)
   - [Contact](#contact)
   - [Join Us](#join-us)
@@ -38,6 +44,26 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 </div>
 
 Modernise-TradeMaster could be beneficial to a wide range of communities including leading trading firms, startups, financial service providers and personal investors. We hope Modernise-TradeMaster can make a change for the whole pipeline of FinRL to prevent untrustworthy results and lead successful industry deployment.
+
+## Dashboard
+
+A full FastAPI-based control dashboard is provided in `dashboard/`.
+
+**Live public dashboard:** https://sphere-seminars-trademarks-tba.trycloudflare.com
+
+```bash
+pip install -r dashboard/requirements.txt
+python -m uvicorn dashboard.main:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://localhost:8000` and use the tabs to:
+
+- Browse agents, environments, datasets, and experiment scripts from the existing `config/`, `data/data/`, and `experiment/` directories.
+- Launch a runnable Q-learning demo on any CSV with a `close` column.
+- Launch existing experiment scripts as background jobs and stream logs.
+- Monitor job status, view live market quotes, and analyze results with risk metrics, equity/drawdown charts, rolling Sharpe, and trade distribution.
+
+The dashboard is intentionally decoupled from the core engine: it runs experiments as subprocess jobs, so you can replace the demo strategy with your own RL training scripts without touching the UI.
 
 ## Installation
 We provide a video tutorial of using docker to build a proper environment of running this project.
@@ -265,26 +291,6 @@ Modernise-TradeMaster is intentionally built as a modular base platform for RL-d
 - **Evaluation toolkit** (`visualization/`) including PRUDEX-Compass and PRIDE-Star.
 
 To add a new data source, implement a small loader under `data_extensions/` (see `data_extensions/README.md`) and wire it into your experiment config. The platform standardizes on OHLCV inputs and expects a `pandas.DataFrame` with `date`, `open`, `high`, `low`, `close`, `volume` columns.
-
-## Dashboard
-
-A full FastAPI-based control dashboard is provided in `dashboard/`.
-
-**Live public dashboard:** https://sphere-seminars-trademarks-tba.trycloudflare.com
-
-```bash
-pip install -r dashboard/requirements.txt
-python -m uvicorn dashboard.main:app --host 0.0.0.0 --port 8000
-```
-
-Open `http://localhost:8000` and use the tabs to:
-
-- Browse agents, environments, datasets, and experiment scripts from the existing `config/`, `data/data/`, and `experiment/` directories.
-- Launch a runnable Q-learning demo on any CSV with a `close` column.
-- Launch existing experiment scripts as background jobs and stream logs.
-- Monitor job status, view results, and render an equity curve + trade table.
-
-The dashboard is intentionally decoupled from the core engine: it runs experiments as subprocess jobs, so you can replace the demo strategy with your own RL training scripts without touching the UI.
 
 ## Attribution
 
