@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import shutil
 import subprocess
 import time
@@ -12,9 +13,10 @@ from typing import Dict, List, Optional
 
 
 class JobManager:
-    def __init__(self, work_root: Path):
+    def __init__(self, work_root: Path, repo_root: Optional[Path] = None):
         self.work_root = Path(work_root)
         self.work_root.mkdir(parents=True, exist_ok=True)
+        self.repo_root = Path(repo_root) if repo_root else self.work_root.parent
         self.jobs: Dict[str, dict] = {}
 
     async def start(
@@ -41,6 +43,12 @@ class JobManager:
         }
         meta_path.write_text(json.dumps(meta_record, indent=2, default=str))
 
+        env = os.environ.copy()
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = str(self.repo_root)
+        if existing_pythonpath:
+            env["PYTHONPATH"] += os.pathsep + existing_pythonpath
+
         loop = asyncio.get_event_loop()
         with open(log_path, "w") as out, open(err_path, "w") as err:
             proc = await loop.run_in_executor(
@@ -49,7 +57,8 @@ class JobManager:
                     command,
                     stdout=out,
                     stderr=err,
-                    cwd=str(self.work_root.parent),
+                    cwd=str(self.repo_root),
+                    env=env,
                     start_new_session=True,
                 ),
             )

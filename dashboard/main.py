@@ -20,18 +20,18 @@ sys.path.insert(0, str(ROOT))
 
 from dashboard.jobs import JobManager
 
-app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.1.0")
-
-WORK_ROOT = Path(tempfile.gettempdir()) / "mtm_dashboard_jobs"
-job_manager = JobManager(work_root=WORK_ROOT)
-
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_ROOT = REPO_ROOT / "config" / "input_config"
 DATA_ROOT = REPO_ROOT / "data" / "data"
 EXPERIMENT_ROOT = REPO_ROOT / "experiment"
+
+app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.1.0")
+
+WORK_ROOT = Path(tempfile.gettempdir()) / "mtm_dashboard_jobs"
+job_manager = JobManager(work_root=WORK_ROOT, repo_root=REPO_ROOT)
+
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -233,7 +233,7 @@ class DQN(object):
             valid_score_list.append(episode_reward_sum)
         index = valid_score_list.index(np.max(valid_score_list))
         model_path = all_model_path + "num_epoch_{}.pth".format(index)
-        self.eval_net = torch.load(model_path)
+        self.eval_net = torch.load(model_path, weights_only=False)
         best_model_path = self.model_path + "/best_model/"
         if not os.path.exists(best_model_path):
             os.makedirs(best_model_path)
