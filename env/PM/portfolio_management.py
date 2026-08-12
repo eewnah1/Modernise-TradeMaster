@@ -1,7 +1,7 @@
 import numpy as np
-from gym.utils import seeding
-import gym
-from gym import spaces
+from gymnasium.utils import seeding
+import gymnasium as gym
+from gymnasium import spaces
 import pandas as pd
 
 

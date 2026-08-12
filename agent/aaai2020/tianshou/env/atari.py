@@ -1,7 +1,7 @@
 import cv2
-import gym
+import gymnasium as gym
 import numpy as np
-from gym.spaces.box import Box
+from gymnasium.spaces.box import Box
 
 
 def create_atari_environment(name=None, sticky_actions=True,

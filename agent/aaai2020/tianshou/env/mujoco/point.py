@@ -2,8 +2,8 @@
 
 import math
 import numpy as np
-from gym import utils
-from gym.envs.mujoco import mujoco_env
+from gymnasium import utils
+from gymnasium.envs.mujoco import mujoco_env
 
 
 class PointEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -59,7 +59,7 @@ class PointEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         if self.noisy_init:
             qpos = self.init_qpos + self.np_random.uniform(
                 size=self.model.nq, low=-.1, high=.1)
-            qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .1
+            qvel = self.init_qvel + self.np_random.standard_normal(self.model.nv) * .1
 
         else:
             qpos = self.init_qpos

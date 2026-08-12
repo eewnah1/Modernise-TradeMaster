@@ -5,10 +5,10 @@ import tempfile
 import xml.etree.ElementTree as ET
 import math
 import numpy as np
-import gym
+import gymnasium as gym
 from . import maze_env_utils
 from .point import PointEnv
-from gym.utils import seeding
+from gymnasium.utils import seeding
 
 # Directory that contains mujoco xml files.
 MODEL_DIR = os.path.join(os.path.dirname(__file__), 'assets')
@@ -478,7 +478,7 @@ class PointMazeEnv(gym.Env):
         self.trajectory = []
         self.wrapped_env.reset()
         if len(self._init_positions) > 1:
-            xy = self._init_positions[self.np_random.randint(
+            xy = self._init_positions[self.np_random.integers(
                 len(self._init_positions))]
             self.wrapped_env.set_xy(xy)
         return self._get_obs()

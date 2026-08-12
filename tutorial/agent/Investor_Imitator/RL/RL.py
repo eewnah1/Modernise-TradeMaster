@@ -2,7 +2,7 @@ import argparse
 from re import A
 from aiohttp import TraceResponseChunkReceivedParams
 import numpy as np
-import gym
+import gymnasium as gym
 import yaml
 import torch.optim as optim
 from torch.distributions import Categorical

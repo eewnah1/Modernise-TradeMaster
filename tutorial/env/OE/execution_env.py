@@ -2,9 +2,9 @@ import logging
 import copy
 import random
 import numpy as np
-import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
+import gymnasium as gym
+from gymnasium import error, spaces, utils
+from gymnasium.utils import seeding
 from utils.action import Action
 from utils.action_state import ActionState
 from utils.order import Order

@@ -34,7 +34,7 @@ google-pasta==0.2.0
 googleapis-common-protos==1.56.3
 gpustat==1.0.0rc1
 grpcio==1.43.0
-gym==0.21.0
+gymnasium==0.29.1
 h11==0.13.0
 h5py==3.7.0
 humanfriendly==10.0
