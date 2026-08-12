@@ -101,6 +101,19 @@ class JobManager:
             return "\n".join(lines[-tail:])
         return text
 
+    def read_metrics(self, job_id: str) -> Optional[dict]:
+        """Read live training metrics if the job writes a live_metrics.json file."""
+        job = self.jobs.get(job_id)
+        if not job:
+            return None
+        metrics_path = Path(job["work_dir"]) / "live_metrics.json"
+        if not metrics_path.exists():
+            return None
+        try:
+            return json.loads(metrics_path.read_text())
+        except Exception:
+            return None
+
     def list_files(self, job_id: str) -> List[dict]:
         job = self.jobs.get(job_id)
         if not job:

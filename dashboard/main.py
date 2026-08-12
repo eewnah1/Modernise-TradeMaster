@@ -5,30 +5,39 @@ import os
 import shutil
 import sys
 import tempfile
+import asyncio
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 import pandas as pd
+try:
+    import yfinance as yf
+except Exception:  # pragma: no cover
+    yf = None
 import yaml
 from fastapi import FastAPI, HTTPException, Request, Query
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.concurrency import run_in_threadpool
 
 # Allow imports from repo root
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from dashboard.jobs import JobManager
+from dashboard import analytics
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_ROOT = REPO_ROOT / "config" / "input_config"
 DATA_ROOT = REPO_ROOT / "data" / "data"
 EXPERIMENT_ROOT = REPO_ROOT / "experiment"
 
-app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.2.0")
+app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.3.0")
 START_TIME = time.time()
 
 WORK_ROOT = Path(tempfile.gettempdir()) / "mtm_dashboard_jobs"
@@ -172,12 +181,17 @@ def _read_load() -> Dict[str, float]:
 @app.get("/api/v1/system")
 async def system_stats() -> Dict[str, Any]:
     """Runtime health of the dashboard host."""
+    mem = _read_mem_gb()
+    disk = _read_disk_gb()
     return {
         "platform": "Modernise-TradeMaster Dashboard",
         "version": app.version,
         "uptime_seconds": round(time.time() - START_TIME, 1),
-        "memory_gb": _read_mem_gb(),
-        "disk": _read_disk_gb(),
+        "cpu_count": os.cpu_count() or 1,
+        "memory_gb": mem,
+        "memory_used_pct": round((mem["total_gb"] - mem["available_gb"]) / mem["total_gb"] * 100, 2) if mem.get("total_gb") else 0.0,
+        "disk": disk,
+        "disk_used_pct": round((disk["total_gb"] - disk["free_gb"]) / disk["total_gb"] * 100, 2) if disk.get("total_gb") else 0.0,
         "load": _read_load(),
     }
 
@@ -355,30 +369,10 @@ async def delete_job(job_id: str):
 # Results endpoints
 # ---------------------------------------------------------------------------
 
-def _compute_drawdown(equity: List[Dict[str, Any]]) -> List[float]:
-    """Return percentage drawdown series from equity curve."""
-    peak = 0.0
-    out = []
-    for r in equity:
-        eq = float(r.get("equity", 0))
-        if eq > peak:
-            peak = eq
-        dd = (eq / peak - 1.0) * 100 if peak > 0 else 0.0
-        out.append(round(dd, 4))
-    return out
-
-
-@app.get("/api/v1/jobs/{job_id}/results")
-async def get_results(job_id: str) -> Dict[str, Any]:
-    """Read metrics, equity curve, trades and output files from a completed job."""
+def _read_job_equity_and_trades(job_id: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Optional[np.ndarray]]:
+    """Load equity, trades and the dataset close prices for a job."""
     job = job_manager.get(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="job not found")
-
     work_dir = Path(job["work_dir"])
-    metrics = {}
-    if (work_dir / "metrics.json").exists():
-        metrics = json.loads((work_dir / "metrics.json").read_text())
 
     equity = []
     if (work_dir / "equity.csv").exists():
@@ -391,13 +385,135 @@ async def get_results(job_id: str) -> Dict[str, Any]:
         tdf = pd.read_csv(trades_path)
         trades = tdf.head(500).to_dict(orient="records")
 
+    close = None
+    try:
+        data_path = job.get("meta", {}).get("data")
+        if data_path:
+            target = _resolve_repo_file(DATA_ROOT, data_path)
+            df = pd.read_csv(target)
+            if "close" in df.columns:
+                close = df["close"].dropna().astype(float).values
+    except Exception:
+        close = None
+
+    return equity, trades, close
+
+
+@app.get("/api/v1/jobs/{job_id}/results")
+async def get_results(job_id: str) -> Dict[str, Any]:
+    """Read metrics, equity curve, trades, analytics and output files from a completed job."""
+    job = job_manager.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="job not found")
+
+    work_dir = Path(job["work_dir"])
+    metrics = {}
+    if (work_dir / "metrics.json").exists():
+        metrics = json.loads((work_dir / "metrics.json").read_text())
+
+    equity, trades, close = _read_job_equity_and_trades(job_id)
+    analytics_data = analytics.compute_result_analytics(equity, trades, close)
+
     return {
         "metrics": metrics,
+        "analytics": analytics_data,
         "equity": equity,
         "trades": trades,
-        "drawdown": _compute_drawdown(equity),
+        "drawdown": analytics_data["rolling"].get("drawdown", []),
         "files": job_manager.list_files(job_id),
     }
+
+
+# ---------------------------------------------------------------------------
+# Real-time job stream
+# ---------------------------------------------------------------------------
+
+@app.get("/api/v1/jobs/{job_id}/stream")
+async def stream_job(job_id: str):
+    """Server-sent events endpoint for live job status, metrics and log tail."""
+
+    async def event_generator():
+        last_log = ""
+        last_status = None
+        finished_loops = 0
+        while True:
+            job = job_manager.get(job_id)
+            if not job:
+                yield f"event: error\ndata: {json.dumps({'detail': 'job not found'})}\n\n"
+                break
+
+            log = job_manager.read_log(job_id, tail=200)
+            metrics = job_manager.read_metrics(job_id)
+            status = job["status"]
+            payload = {
+                "status": status,
+                "log": log,
+                "metrics": metrics,
+                "finished": job.get("finished"),
+                "returncode": job.get("returncode"),
+            }
+
+            # Only emit if something changed or still running
+            if log != last_log or status != last_status or status == "running":
+                yield f"event: update\ndata: {json.dumps(payload)}\n\n"
+                last_log = log
+                last_status = status
+
+            if status in ("success", "error", "stopped"):
+                finished_loops += 1
+                if finished_loops >= 3:
+                    yield f"event: close\ndata: {json.dumps({'status': status})}\n\n"
+                    break
+
+            await asyncio.sleep(1.0)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Live market snapshot
+# ---------------------------------------------------------------------------
+
+MARKET_CACHE: Dict[str, Any] = {"data": {}, "ts": 0.0}
+MARKET_TICKERS = ["SPY", "QQQ", "GLD", "TLT", "BTC-USD", "ETH-USD", "^VIX"]
+
+
+def _fetch_market_snapshot() -> Dict[str, Any]:
+    """Fetch last close/change for a hard-coded watchlist via yfinance."""
+    if yf is None:
+        return {"error": "yfinance not installed", "quotes": []}
+
+    quotes = []
+    for ticker in MARKET_TICKERS:
+        try:
+            hist = yf.Ticker(ticker).history(period="2d", interval="1d")
+            if hist is None or hist.empty:
+                continue
+            hist = hist.dropna()
+            if len(hist) < 1:
+                continue
+            last = hist["Close"].iloc[-1]
+            prev = hist["Close"].iloc[-2] if len(hist) > 1 else last
+            change = (last / prev - 1.0) * 100 if prev else 0.0
+            quotes.append({
+                "ticker": ticker,
+                "price": round(float(last), 4),
+                "change_pct": round(float(change), 4),
+                "currency": "USD" if "USD" not in ticker else "USD",
+            })
+        except Exception as exc:
+            quotes.append({"ticker": ticker, "error": str(exc)})
+    return {"quotes": quotes, "timestamp": time.time()}
+
+
+@app.get("/api/v1/market/snapshot")
+async def market_snapshot() -> Dict[str, Any]:
+    """Cached live market snapshot for the dashboard Market Monitor."""
+    if time.time() - MARKET_CACHE["ts"] > 60:
+        data = await run_in_threadpool(_fetch_market_snapshot)
+        MARKET_CACHE["data"] = data
+        MARKET_CACHE["ts"] = time.time()
+    return MARKET_CACHE["data"]
 
 
 if __name__ == "__main__":

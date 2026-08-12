@@ -8,7 +8,9 @@ trade log so the dashboard can render a complete experiment result.
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -25,8 +27,9 @@ def encode_state(diff: np.ndarray, n: int = 3) -> int:
     return state
 
 
-def train_q_table(returns: np.ndarray, episodes: int, lr: float, eps: float, gamma: float = 0.9, n: int = 3):
+def train_q_table(returns: np.ndarray, episodes: int, lr: float, eps: float, gamma: float = 0.9, n: int = 3, output_dir: Optional[Path] = None):
     q_table = np.zeros((3**n, len(ACTIONS)))
+    start = time.time()
     for ep in range(episodes):
         for t in range(n, len(returns) - 1):
             state = encode_state(returns[t - n : t], n)
@@ -43,13 +46,34 @@ def train_q_table(returns: np.ndarray, episodes: int, lr: float, eps: float, gam
             q_table[state, action] += lr * (
                 reward + gamma * np.max(q_table[next_state]) - q_table[state, action]
             )
+
+        if output_dir and ep % max(1, episodes // 20) == 0:
+            live = {
+                "stage": "training",
+                "episode": ep,
+                "episodes": episodes,
+                "progress_pct": round((ep / max(episodes, 1)) * 100, 2),
+                "elapsed_sec": round(time.time() - start, 2),
+            }
+            (output_dir / "live_metrics.json").write_text(json.dumps(live))
+
+    if output_dir:
+        live = {
+            "stage": "training",
+            "episode": episodes,
+            "episodes": episodes,
+            "progress_pct": 100.0,
+            "elapsed_sec": round(time.time() - start, 2),
+        }
+        (output_dir / "live_metrics.json").write_text(json.dumps(live))
     return q_table
 
 
-def backtest(close: np.ndarray, returns: np.ndarray, q_table: np.ndarray, n: int = 3):
+def backtest(close: np.ndarray, returns: np.ndarray, q_table: np.ndarray, n: int = 3, output_dir: Optional[Path] = None):
     equity = [1.0]
     trades = []
     position = 0
+    start = time.time()
     for t in range(n, len(returns) - 1):
         state = encode_state(returns[t - n : t], n)
         action = int(np.argmax(q_table[state]))
@@ -63,6 +87,16 @@ def backtest(close: np.ndarray, returns: np.ndarray, q_table: np.ndarray, n: int
 
         ret = returns[t + 1] * position
         equity.append(equity[-1] * (1.0 + ret))
+
+        if output_dir and t % max(1, (len(returns) - n) // 20) == 0:
+            live = {
+                "stage": "backtest",
+                "step": int(t),
+                "total_steps": int(len(returns) - 1),
+                "progress_pct": round(((t - n) / max(len(returns) - n - 1, 1)) * 100, 2),
+                "elapsed_sec": round(time.time() - start, 2),
+            }
+            (output_dir / "live_metrics.json").write_text(json.dumps(live))
 
     return np.array(equity), trades
 
@@ -105,14 +139,14 @@ def main():
     returns = np.diff(close) / close[:-1]
     print(f"Training Q-learning agent on {len(returns)} steps, {args.episodes} episodes...")
 
-    q_table = train_q_table(returns, args.episodes, args.lr, args.eps, args.gamma, args.n)
-    equity, trades = backtest(close, returns, q_table, args.n)
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=True)
+
+    q_table = train_q_table(returns, args.episodes, args.lr, args.eps, args.gamma, args.n, output_dir=out)
+    equity, trades = backtest(close, returns, q_table, args.n, output_dir=out)
     metrics = compute_metrics(equity)
     metrics["num_trades"] = len(trades)
     metrics["data_points"] = len(close)
-
-    out = Path(args.output)
-    out.mkdir(parents=True, exist_ok=True)
 
     pd.DataFrame({"step": range(len(equity)), "equity": equity}).to_csv(
         out / "equity.csv", index=False
@@ -132,6 +166,9 @@ def main():
     }
     (out / "params.json").write_text(json.dumps(params, indent=2))
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2))
+
+    live = {"stage": "complete", "progress_pct": 100.0, "metrics": metrics}
+    (out / "live_metrics.json").write_text(json.dumps(live))
 
     print("METRICS", json.dumps(metrics))
     print(f"Results written to {out}")

@@ -27,7 +27,7 @@
       </nav>
       <div class="nav-footer">
         <div class="status-pill" id="status-pill"><span class="dot"></span><span id="status-text">checking...</span></div>
-        <div class="version">v0.2.0</div>
+        <div class="version">v0.3.0</div>
       </div>
     </aside>
 
@@ -35,15 +35,23 @@
       <header class="topbar">
         <h2 id="page-title">Platform Home</h2>
         <div class="topbar-actions">
+          <button class="icon-btn" id="palette-btn" title="Command palette (Ctrl+K)"><i class="fa-solid fa-magnifying-glass"></i></button>
           <button class="icon-btn" id="refresh-all" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
         </div>
       </header>
 
       <main>
         <section id="home" class="tab active">
-          <div class="panel" style="background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(16,185,129,0.08));">
-            <h3>Welcome to the institutional-grade RL trading workbench</h3>
-            <p>Train, validate, and deploy reinforcement-learning agents for algorithmic trading, order execution, and portfolio management. Select an experiment below or launch an existing runner from the <code>experiment/</code> directory.</p>
+          <div class="panel" style="background: linear-gradient(135deg, rgba(59,130,246,0.14), rgba(16,185,129,0.08)); border: 1px solid rgba(59,130,246,0.25);">
+            <h3>Institutional-grade RL trading workbench</h3>
+            <p>Train, validate and deploy reinforcement-learning agents for algorithmic trading, order execution and portfolio management. Run real experiments or launch a trainable Q-learning demo to validate the pipeline end-to-end.</p>
+            <button class="primary" onclick="switchTab('setup')"><i class="fa-solid fa-flask"></i> New Experiment</button>
+            <button class="secondary" onclick="switchTab('jobs')" style="margin-left:10px"><i class="fa-solid fa-server"></i> Job Monitor</button>
+          </div>
+
+          <h4>Market Monitor</h4>
+          <div class="market-grid" id="market-monitor">
+            <div class="ticker-card"><div class="symbol">Loading...</div><div class="price">-</div></div>
           </div>
 
           <div class="cards" id="home-stats">
@@ -51,9 +59,9 @@
             <div class="stat-card"><div class="label">Agents</div><div class="value" id="stat-agents">-</div><div class="sub">config files</div></div>
             <div class="stat-card"><div class="label">Environments</div><div class="value" id="stat-envs">-</div><div class="sub">market simulators</div></div>
             <div class="stat-card"><div class="label">Datasets</div><div class="value" id="stat-datasets">-</div><div class="sub">CSV universes</div></div>
-            <div class="stat-card"><div class="label">Memory</div><div class="value" id="stat-mem">-</div><div class="sub" id="stat-mem-sub">available GB</div></div>
-            <div class="stat-card"><div class="label">Load</div><div class="value" id="stat-load">-</div><div class="sub" id="stat-load-sub">1m average</div></div>
-            <div class="stat-card"><div class="label">Disk Free</div><div class="value" id="stat-disk">-</div><div class="sub">repo partition</div></div>
+            <div class="stat-card"><div class="label">Memory</div><div class="value" id="stat-mem">-</div><div class="resource-bar"><div class="bar-track"><div class="bar-fill" id="bar-mem"></div></div></div></div>
+            <div class="stat-card"><div class="label">CPU Load</div><div class="value" id="stat-load">-</div><div class="resource-bar"><div class="bar-track"><div class="bar-fill" id="bar-load"></div></div></div></div>
+            <div class="stat-card"><div class="label">Disk Used</div><div class="value" id="stat-disk">-</div><div class="resource-bar"><div class="bar-track"><div class="bar-fill" id="bar-disk"></div></div></div></div>
             <div class="stat-card"><div class="label">Uptime</div><div class="value" id="stat-uptime">-</div><div class="sub">dashboard seconds</div></div>
           </div>
 
@@ -69,9 +77,9 @@
             </div>
             <div class="panel">
               <h3>Quick actions</h3>
-              <p>Jump to the most common operations:</p>
+              <p>Start a demo, inspect configs or compare results from completed jobs.</p>
               <button class="secondary" onclick="switchTab('setup')"><i class="fa-solid fa-flask"></i> New Experiment</button>
-              <button class="secondary" onclick="switchTab('jobs')" style="margin-left:8px"><i class="fa-solid fa-server"></i> Monitor Jobs</button>
+              <button class="secondary" onclick="switchTab('resources')" style="margin-left:8px"><i class="fa-solid fa-database"></i> Browse Data</button>
             </div>
           </div>
         </section>
@@ -80,7 +88,7 @@
           <div class="grid-2">
             <div class="panel">
               <h3>Quick Q-Learning Demo</h3>
-              <p>Run a trainable Q-table agent on any CSV with a <code>close</code> column to validate the dashboard pipeline end-to-end.</p>
+              <p>Run a trainable Q-table agent on any CSV with a <code>close</code> column. Live progress streams to Jobs & Logs.</p>
               <label>Dataset</label>
               <select id="demo-data"></select>
               <div class="row">
@@ -95,7 +103,7 @@
 
             <div class="panel">
               <h3>Real Experiment Runner</h3>
-              <p>Execute any existing <code>experiment/&lt;task&gt;/&lt;agent&gt;/experiment.py</code> script as a background job.</p>
+              <p>Execute any existing <code>experiment/&lt;task&gt;/&lt;agent&gt;/experiment.py</code> script as a background job with live log streaming.</p>
               <label>Experiment script</label>
               <select id="exp-script"></select>
               <button id="run-experiment" class="primary"><i class="fa-solid fa-rocket"></i> Run Experiment Script</button>
@@ -106,7 +114,7 @@
           <div class="grid-2">
             <div class="panel">
               <h3>Selected Dataset Preview</h3>
-              <div id="dataset-preview">Choose a dataset in the Configs & Data tab to preview rows and columns.</div>
+              <div id="dataset-preview">Choose a dataset in the Configs & Data tab to preview rows and column stats.</div>
             </div>
             <div class="panel">
               <h3>Selected Config Preview</h3>
@@ -118,13 +126,13 @@
         <section id="jobs" class="tab">
           <div class="panel">
             <div class="panel-header"><h3>Job Queue</h3><div><button class="secondary" id="refresh-jobs"><i class="fa-solid fa-rotate"></i> Refresh</button></div></div>
-            <div class="job-table" id="jobs-table-wrap">
-              <p class="message">Loading jobs...</p>
-            </div>
+            <div class="job-table" id="jobs-table-wrap"><p class="message">Loading jobs...</p></div>
           </div>
           <div class="panel">
-            <div class="panel-header"><h3>Selected Job Log <span id="selected-job-id" style="color:var(--muted);font-weight:400"></span></h3>
+            <div class="panel-header">
+              <h3>Selected Job Log <span id="selected-job-id" style="color:var(--muted);font-weight:400"></span></h3>
               <div>
+                <span id="live-indicator" style="display:none;color:var(--accent-2);font-size:12px;margin-right:10px"><i class="fa-solid fa-satellite-dish"></i> LIVE</span>
                 <button class="secondary" id="tail-50">Tail 50</button>
                 <button class="secondary" id="tail-500" style="margin-left:6px">Tail 500</button>
               </div>
@@ -137,13 +145,20 @@
           <div class="panel">
             <div class="panel-header">
               <h3>Result Analysis</h3>
-              <select id="result-job" style="width:320px"><option value="">-- choose a completed job --</option></select>
+              <select id="result-job" style="width:340px"><option value="">-- choose a completed job --</option></select>
             </div>
+            <div id="analytics" class="metrics"></div>
             <div id="metrics" class="metrics"></div>
+
             <div class="chart-row">
               <div class="chart-wrap"><canvas id="equity-chart"></canvas></div>
               <div class="chart-wrap"><canvas id="drawdown-chart"></canvas></div>
             </div>
+            <div class="chart-row">
+              <div class="chart-wrap"><canvas id="rolling-chart"></canvas></div>
+              <div class="chart-wrap"><canvas id="trade-chart"></canvas></div>
+            </div>
+
             <h4>Trade Log</h4>
             <div id="trade-table-wrap" style="overflow:auto"><p class="message">Select a job to view trades.</p></div>
             <h4 style="margin-top:22px">Output Files</h4>
@@ -168,10 +183,17 @@
           </div>
           <div class="panel">
             <h3>Preview</h3>
-            <div class="preview-frame"><pre id="resource-preview">Select a config or dataset from the lists above.</pre></div>
+            <div id="resource-preview" class="preview-frame"><pre>Select a config or dataset from the lists above.</pre></div>
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <div class="palette-overlay" id="palette-overlay">
+    <div class="palette">
+      <input type="text" id="palette-input" placeholder="Type a command..." />
+      <ul id="palette-list"></ul>
     </div>
   </div>
 
