@@ -18,7 +18,7 @@ sys.path.append('..')
 
 
 class agent:
-    """agent is class that contains API for the TradeMaster to train, valid and test the agents from the RLlib in the 
+    """agent is class that contains API for the Modernise-TradeMaster to train, valid and test the agents from the RLlib in the 
     finicial market
     to initialize the agent, we need:
     algorithms: the name of algorithms of RL, now, we support a2c,ddpg,pg,ppo,sac,td3

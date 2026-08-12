@@ -37,22 +37,22 @@ Step 1: Install [Docker](https://docs.docker.com/)
     GitCommit:        de40ad0
   ```
 
-Step 2: Build the docker image from [dockerfile](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/docker/Dockerfile)
-- Install `TradeMaster`
+Step 2: Build the docker image from [dockerfile](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/docker/Dockerfile)
+- Install `Modernise-TradeMaster`
   ```
-   git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+   git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
 - Create image from the project docker file.
 
   If your chip is arm-architectured, open terminal or cmd in the position of the project and type
   ```
   cd ./docker/arm
-  docker build -t="trademaster:0.1" .
+  docker build -t="Modernise-TradeMaster:0.1" .
   ```
   If you chip is x86-architectured, open terminal or cmd in the position of the project and type
   ```
   cd ./docker/x86
-  docker build -t="trademaster:0.1" .
+  docker build -t="Modernise-TradeMaster:0.1" .
   ```
   It will take a while before the image is built.
 
@@ -65,11 +65,11 @@ Step 3: Test whether the image is installed correctly
   It should shows 
   ```
   REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
-  trademaster   0.1       02801f755797   4 minutes ago   15GB 
+  Modernise-TradeMaster   0.1       02801f755797   4 minutes ago   15GB 
   ```
 - Create a container and run an experiment to see whether the installation is successful
   ```
-  docker run -it trademaster:0.1
+  docker run -it Modernise-TradeMaster:0.1
   python experiment/AT/DeepScalper/experiment.py
   ```
   

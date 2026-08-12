@@ -6,9 +6,9 @@
 
 # -- Project information
 
-project = 'TradeMaster'
+project = 'Modernise-TradeMaster'
 
-author = 'TradeMaster'
+author = 'H Tan'
 
 release = '0.1'
 version = '0.1.0'

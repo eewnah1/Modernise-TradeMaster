@@ -2,7 +2,7 @@
 
 In this section we demonstrate how to set up an environment with PyTorch.
 
-TradeMaster supports different operating systems: Linux, Windows and macOS. It requires Python xx, CUDA xx and PyTorch xx.
+Modernise-TradeMaster supports different operating systems: Linux, Windows and macOS. It requires Python xx, CUDA xx and PyTorch xx.
 
 
 **Step 0.** Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
@@ -22,20 +22,20 @@ Step 2: Install OpenAI
    ```
    sudo apt-get update && sudo apt-get install cmake libopenmpi-dev python3-dev zlib1g-dev libgl1-mesa-glx swig
    ```
-Step 3: Install [`TradeMaster`](https://github.com/TradeMaster-NTU/TradeMaster)
+Step 3: Install [`Modernise-TradeMaster`](https://github.com/eewnah1/Modernise-TradeMaster)
 - Open a terminal amd type 
   ```
-  conda create --name TradeMaster python=3.7.13
+  conda create --name Modernise-TradeMaster python=3.7.13
   ```
-  to install a new conda environment for `TradeMaster`
-- Install `TradeMaster`
+  to install a new conda environment for `Modernise-TradeMaster`
+- Install `Modernise-TradeMaster`
   ```
-  git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+  git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
-- Open the folder `TradeMaster` and open a terminal under the same position
-- Install the dependency of `TradeMaster`, run the command:
+- Open the folder `Modernise-TradeMaster` and open a terminal under the same position
+- Install the dependency of `Modernise-TradeMaster`, run the command:
    ```
-   conda activate TradeMaster
+   conda activate Modernise-TradeMaster
    cd ./requirement
    pip install -r requirements.txt
    conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
@@ -54,20 +54,20 @@ Step 3: Install OpenAI
    ```
    sudo apt-get update && sudo apt-get install cmake libopenmpi-dev python3-dev zlib1g-dev libgl1-mesa-glx swig
    ```
-Step 4: Install [`TradeMaster`](https://github.com/TradeMaster-NTU/TradeMaster)
+Step 4: Install [`Modernise-TradeMaster`](https://github.com/eewnah1/Modernise-TradeMaster)
 - Open a terminal amd type 
   ```
-  conda create --name TradeMaster python=3.7.13
+  conda create --name Modernise-TradeMaster python=3.7.13
   ```
-  to install a new conda environment for `TradeMaster`
-- Install `TradeMaster`
+  to install a new conda environment for `Modernise-TradeMaster`
+- Install `Modernise-TradeMaster`
   ```
-  git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+  git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
-- Open the folder `TradeMaster` and open a terminal under the same position
-- Install the dependency of `TradeMaster`, run the command:
+- Open the folder `Modernise-TradeMaster` and open a terminal under the same position
+- Install the dependency of `Modernise-TradeMaster`, run the command:
    ```
-   conda activate TradeMaster
+   conda activate Modernise-TradeMaster
    cd ./requirement
    pip install -r requirements.txt
    conda install pytorch torchvision torchaudio cpuonly -c pytorch
@@ -101,20 +101,20 @@ Installation of system packages on Mac requires Homebrew. With Homebrew installe
 ```
 brew install cmake openmpi
 ```
-Step 4: Install [`TradeMaster`](https://github.com/TradeMaster-NTU/TradeMaster)
+Step 4: Install [`Modernise-TradeMaster`](https://github.com/eewnah1/Modernise-TradeMaster)
 - Open a terminal amd type 
   ```
-  conda create --name TradeMaster python=3.7.13
+  conda create --name Modernise-TradeMaster python=3.7.13
   ```
-  to install a new conda environment for `TradeMaster`
-- Install `TradeMaster`
+  to install a new conda environment for `Modernise-TradeMaster`
+- Install `Modernise-TradeMaster`
   ```
-   git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+   git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
-- Open the folder `TradeMaster` and open a terminal under the same position
-- Install the dependency of `TradeMaster`, run the command:
+- Open the folder `Modernise-TradeMaster` and open a terminal under the same position
+- Install the dependency of `Modernise-TradeMaster`, run the command:
    ```
-   conda activate TradeMaster
+   conda activate Modernise-TradeMaster
    cd ./requirement
    pip install -r requirements.txt
    conda install pytorch torchvision torchaudio -c pytorch
@@ -126,7 +126,7 @@ Step 4: Install [`TradeMaster`](https://github.com/TradeMaster-NTU/TradeMaster)
 
 ### Install on Google Colab
 
-### Using TradeMaster with Docker
+### Using Modernise-TradeMaster with Docker
 Docker is a set of platform as a service (PaaS) products that use OS-level virtualization to deliver software in packages called containers.
 
 Step 1: Install [Docker](https://docs.docker.com/)
@@ -164,22 +164,22 @@ Step 1: Install [Docker](https://docs.docker.com/)
     GitCommit:        de40ad0
   ```
 
-Step 2: Build the docker image from [dockerfile](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/docker/Dockerfile)
-- Install `TradeMaster`
+Step 2: Build the docker image from [dockerfile](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/docker/Dockerfile)
+- Install `Modernise-TradeMaster`
   ```
-   git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+   git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
 - Create image from the project docker file.
 
   If your chip is arm-architectured, open terminal or cmd in the position of the project and type
   ```
   cd ./docker/arm
-  docker build -t="trademaster:0.1" .
+  docker build -t="Modernise-TradeMaster:0.1" .
   ```
   If you chip is x86-architectured, open terminal or cmd in the position of the project and type
   ```
   cd ./docker/x86
-  docker build -t="trademaster:0.1" .
+  docker build -t="Modernise-TradeMaster:0.1" .
   ```
   It will take a while before the image is built.
 
@@ -192,11 +192,11 @@ Step 3: Test whether the image is installed correctly
   It should shows 
   ```
   REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
-  trademaster   0.1       02801f755797   4 minutes ago   15GB 
+  Modernise-TradeMaster   0.1       02801f755797   4 minutes ago   15GB 
   ```
 - Create a container and run an experiment to see whether the installation is successful
   ```
-  docker run -it trademaster:0.1
+  docker run -it Modernise-TradeMaster:0.1
   python experiment/AT/DeepScalper/experiment.py
   ```
 

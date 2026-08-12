@@ -15,10 +15,10 @@ ETEO is an end-to-end adaptive framework for optimal trade execution based on Pr
 
 ## Notebook and Script
 
-In this notebook, we implement the training and testing process of ETEO based on the TradeMaster framework.
+In this notebook, we implement the training and testing process of ETEO based on the Modernise-TradeMaster framework.
 
-[Tutorial4_ETEO](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial4_ETEO.ipynb)
+[Tutorial4_ETEO](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial4_ETEO.ipynb)
 
 And this is the script for training and testing.
 
-[train_eteo.py](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial4_ETEO.ipynb)
+[train_eteo.py](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial4_ETEO.ipynb)

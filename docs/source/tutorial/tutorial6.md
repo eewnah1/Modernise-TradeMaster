@@ -5,10 +5,10 @@ PPO strikes a balance between ease of implementation, sample complexity, and eas
 
 ## Notebook and Script
 
-In this notebook, we implement the training and testing process of PPO based on the TradeMaster framework.
+In this notebook, we implement the training and testing process of PPO based on the Modernise-TradeMaster framework.
 
-[Tutorial6_PPO](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial6_PPO.ipynb)
+[Tutorial6_PPO](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial6_PPO.ipynb)
 
 And this is the script for training and testing.
 
-[train_ppo.py](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial6_PPO.ipynb)
+[train_ppo.py](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial6_PPO.ipynb)

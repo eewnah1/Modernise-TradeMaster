@@ -11,10 +11,10 @@ The framework consists of the Ensemble of Identical Independent Evaluators
 
 
 ## Notebook and Script
-In this notebook, we implement the training and testing process of EIIE based on the TradeMaster framework.
+In this notebook, we implement the training and testing process of EIIE based on the Modernise-TradeMaster framework.
 
-[Tutorial2_EIIE](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial2_EIIE.ipynb)
+[Tutorial2_EIIE](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial2_EIIE.ipynb)
 
 And this is the script for training and testing.
 
-[train_eiie.py](https://github.com/TradeMaster-NTU/TradeMaster/blob/1.0.0/tools/portfolio_management/train_eiie.py)
+[train_eiie.py](https://github.com/eewnah1/Modernise-TradeMaster/blob/1.0.0/tools/portfolio_management/train_eiie.py)

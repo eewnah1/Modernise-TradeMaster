@@ -50,7 +50,7 @@ The scores of the visualization result are calculated as described:
 
 ## Examples
 ### Use Market Dynamics Model to prepare evaluation datasets
-It is recommended to run through the trademaster/evaluation/market_dynamics_labeling/example.ipynb notebook to visualize the labeling process. This will also give hints on
+It is recommended to run through the Modernise-TradeMaster/evaluation/market_dynamics_labeling/example.ipynb notebook to visualize the labeling process. This will also give hints on
 deciding the parameters for your dataset. The example.html contains the visualization results from example.ipynb.
 
 An example of labeling the data

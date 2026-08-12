@@ -1,4 +1,4 @@
-# TradeMaster: An RL Platform for Trading
+# Modernise-TradeMaster: An RL Platform for Trading
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-3713/)
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macos-lightgrey)](Platform)
 [![License](https://img.shields.io/github/license/ai-gamer/PRUDEX-Compass)](License)
@@ -8,13 +8,13 @@
 </div>
 
 ***
-TradeMaster is a first-of-its kind, best-in-class open-source platform for quantitative trading (QT) empowered by reinforcement learning (RL).
+Modernise-TradeMaster is a first-of-its kind, best-in-class open-source platform for quantitative trading (QT) empowered by reinforcement learning (RL).
 
 It covers the full pipeline for the design, implementation, evaluation and deployment of RL-based trading methods. It contains: 1) a toolkit for efficient data collection, preprocessing and analysis; 2) a high-fidelity data-driven market simulator for mainstream QT tasks (e.g., portfolio management and algorithmic trading); 3) standard implementations of over 10 novel FinRL methods; 4) a systematic evaluation benchmark called PRUDEX-Compass.
 
 ## Outline
 
-- [TradeMaster: An RL Platform for Trading](#trademaster-an-rl-platform-for-trading)
+- [Modernise-TradeMaster: An RL Platform for Trading](#modernise-trademaster-an-rl-platform-for-trading)
   - [Outline](#outline)
   - [Overview](#overview)
   - [Installation](#installation)
@@ -36,7 +36,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 <img align="center" src=figure/Architecture.jpg width="70%"/>
 </div>
 
-TradeMaster could be beneficial to a wide range of communities including leading trading firms, startups, financial service providers and personal investors. We hope TradeMaster can make a change for the whole pipeline of FinRL to prevent untrustworthy results and lead successful industry deployment.
+Modernise-TradeMaster could be beneficial to a wide range of communities including leading trading firms, startups, financial service providers and personal investors. We hope Modernise-TradeMaster can make a change for the whole pipeline of FinRL to prevent untrustworthy results and lead successful industry deployment.
 
 ## Installation
 We provide a video tutorial of using docker to build a proper environment of running this project.
@@ -44,42 +44,42 @@ We provide a video tutorial of using docker to build a proper environment of run
 [![Video Tutorial](tutorial/installation/cover(1).png)](https://www.youtube.com/watch?v=uo80u1byGRc)
 
 To help you better understand the step discribed in the video, Here are the installation tutorials for different operating systems:
-- [Docker](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/installation/Docker/README.md)  <font color='red'>  (Recommended)  </font>
-- [MacOS](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/installation/Mac/README.md)
-- [Linux](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/installation/Linux/README.md)
-- [Windows](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/installation/Windows/README.md)
+- [Docker](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/installation/Docker/README.md)  <font color='red'>  (Recommended)  </font>
+- [MacOS](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/installation/Mac/README.md)
+- [Linux](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/installation/Linux/README.md)
+- [Windows](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/installation/Windows/README.md)
 
 ## Tutorial
 We provide tutorials for users to get start with.
 |  Algorithm  | Dataset |                                                     Code link                                                     |                     Description                      |
 | :---------: | :-----: | :---------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------: |
-| Classic RL  |   FX    |   [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/ClassicalRL_for_PM_on_FX.ipynb)    | Classic RL Algorithms for Portfolio Management on FX |
-| DeepScalper | Bitcoin | [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/DeepScalper_for_AT_on_Bitcoin.ipynb) |     DeepScalper for Algorithm Trading on Crypto      |
-|    EIIE     |  DJ30   |      [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/EIIE_for_PM_on_DJ30.ipynb)      |        EIIE for Portfolio Management on DJ30         |
-|    IMIT     |  DJ30   |      [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/IMIT_for_PM_on_DJ30.ipynb)      |  Investor Imitator for Portfolio Management on DJ30  |
-|    SARL     |  DJ30   |      [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/SARL_for_PM_on_DJ30.ipynb)      |        SARL for Portfolio Management on DJ30         |
-- [Colab Version](https://colab.research.google.com/drive/10M3F6qF8qJ31eQkBR7B6OHhYCR1ZUlrp#scrollTo=4TKpEroeFdT4): Use Google Colab resource to run TradeMaster on Cloud  
+| Classic RL  |   FX    |   [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/ClassicalRL_for_PM_on_FX.ipynb)    | Classic RL Algorithms for Portfolio Management on FX |
+| DeepScalper | Bitcoin | [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/DeepScalper_for_AT_on_Bitcoin.ipynb) |     DeepScalper for Algorithm Trading on Crypto      |
+|    EIIE     |  DJ30   |      [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/EIIE_for_PM_on_DJ30.ipynb)      |        EIIE for Portfolio Management on DJ30         |
+|    IMIT     |  DJ30   |      [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/IMIT_for_PM_on_DJ30.ipynb)      |  Investor Imitator for Portfolio Management on DJ30  |
+|    SARL     |  DJ30   |      [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/SARL_for_PM_on_DJ30.ipynb)      |        SARL for Portfolio Management on DJ30         |
+- [Colab Version](https://colab.research.google.com/drive/10M3F6qF8qJ31eQkBR7B6OHhYCR1ZUlrp#scrollTo=4TKpEroeFdT4): Use Google Colab resource to run Modernise-TradeMaster on Cloud  
 
 ## Toolkit
-- [CSDI](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html) for financial data imputation [(link)](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/CSDI/README.md)
-- Automatic market style recognition [(link)](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/MarketRegimeLabeling/README.md)
+- [CSDI](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html) for financial data imputation [(link)](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/CSDI/README.md)
+- Automatic market style recognition [(link)](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/MarketRegimeLabeling/README.md)
 
 ## Results and Visualization
-The evaluation module of TradeMaster is mainly based on [PRUDEX-Compass](https://github.com/ai-gamer/PRUDEX-Compass), a systematic evaluation toolkit of FinRL methods with 6 axes and 17 measures. We show some results here:
+The evaluation module of Modernise-TradeMaster is mainly based on [PRUDEX-Compass](https://github.com/ai-gamer/PRUDEX-Compass), a systematic evaluation toolkit of FinRL methods with 6 axes and 17 measures. We show some results here:
 
 **PRUDEX-Compass** provides an intuitive visual means to give readers a sense of comparability and positioning of FinRL methods. The inner level maps out the relative strength of FinRL methods in terms of each axis, whereas the outer level provides a compact way to visually assess which set-up and evaluation measures are practically reported to point out how comprehensive the evaluation are for FinRL algorithms.
 
 <div align="center">
-  <img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/PRUDEX.jpg" width = 500 height = 400 />
+  <img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/PRUDEX.jpg" width = 500 height = 400 />
 </div>
 
 **PRIDE-Star** is a star plot to evaluate profitability,risk-control and diversity. It contains the normalized score of 8 measures.
 
 <table align="center">
     <tr>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/A2C.PNG" width = 220 height = 200 />   </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/PPO.PNG" width = 220 height = 200 /> </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/SAC.PNG" width = 220 height = 200 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/A2C.PNG" width = 220 height = 200 />   </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/PPO.PNG" width = 220 height = 200 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/SAC.PNG" width = 220 height = 200 /> </center></td>
     </tr>
     <tr>
      <td align="center"><center>(a) A2C</center></td><td align="center"><center>(b) PPO</center></td>      <td align="center"><center>(c) SAC</center></td>                   
@@ -94,9 +94,9 @@ plot is a bar plot, where the i-th column in the rank distribution shows the pro
 
 <table align="center">
     <tr>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/result/visualization/rank-1.png" width = 300 height = 170 />   </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/USrank.PNG" width = 300 height = 170 /> </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/FXrank.PNG" width = 300 height = 170 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/result/visualization/rank-1.png" width = 300 height = 170 />   </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/USrank.PNG" width = 300 height = 170 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/FXrank.PNG" width = 300 height = 170 /> </center></td>
     </tr>
     <tr>
      <td align="center"><center>(a) All 4 datasets</center></td><td align="center"><center>(b) DJ30</center></td>      <td align="center"><center>(c) FX</center></td>                   
@@ -112,9 +112,9 @@ plot is a bar plot, where the i-th column in the rank distribution shows the pro
 
 <table align="center">
     <tr>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/result/visualization/pp-1.png" width = 300 height = 170 />   </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/USPP.PNG" width = 300 height = 170 /> </center></td>
-        <td ><center><img src="https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/visualization_data/FXPP.PNG" width = 300 height = 170 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/result/visualization/pp-1.png" width = 300 height = 170 />   </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/USPP.PNG" width = 300 height = 170 /> </center></td>
+        <td ><center><img src="https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/visualization_data/FXPP.PNG" width = 300 height = 170 /> </center></td>
     </tr>
     <tr>
      <td align="center"><center>(a) All 4 datasets</center></td><td align="center"><center>(b) DJ30</center></td>      <td align="center"><center>(c) FX</center></td>                   
@@ -126,7 +126,7 @@ plot is a bar plot, where the i-th column in the rank distribution shows the pro
   <img src="https://github.com/qinmoelei/TradeMaster_reframe/blob/master/tutorial/result/visualization/pp-1.png" width = 300 height = 225 />
 </div> -->
 
-For more information of the usage of this part, please refer to this [tutorial](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Visualization.ipynb) and this [project](https://github.com/ai-gamer/PRUDEX-Compass)
+For more information of the usage of this part, please refer to this [tutorial](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Visualization.ipynb) and this [project](https://github.com/ai-gamer/PRUDEX-Compass)
 
 
 
@@ -153,11 +153,11 @@ Classic RL based on Pytorch and Ray:
 | Dataset |                    Data Source                     |     Type      |           Range and Frequency            | Raw Data |                                                 Datasheet                                                 |
 | :-----: | :------------------------------------------------: | :-----------: | :--------------------------------------: | :------: | :-------------------------------------------------------------------------------------------------------: |
 |  SP500   | [YahooFinance](https://pypi.org/project/yfinance/) |   US Stock    |       2000/01/01-2022/01/01, 1day        |  OHLCV   |         [SP500]()          |
-|  DJ30   | [YahooFinance](https://pypi.org/project/yfinance/) |   US Stock    |       2012/01/01-2021/12/31, 1day        |  OHLCV   |         [DJ30](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/data/dj30/DJ30.pdf)          |
-|   FX    |    [Kaggle](https://pypi.org/project/yfinance/)    |      FX       |       2000/01/01-2019/12/31, 1day        |  OHLCV   |         [FX](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/data/exchange/FX.pdf)          |
-| Crypto  |    [Kaggle](https://pypi.org/project/yfinance/)    |    Crypto     |       2013/04/29-2021/07/06, 1day        |  OHLCV   |        [Crypto](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/data/BTC/Crypto.pdf)        |
-|  SZ50   | [YahooFinance](https://pypi.org/project/yfinance/) | CN Securities |       2009/01/02-2021-01-01, 1day        |  OHLCV   |         [SZ50](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/data/sz50/SZ50.pdf)          |
-| Bitcoin |                     [Kaggle]()                     |    Crypto     | 2021-04-07 11:33-2021-04-19 09:54 , 1min |   LOB    | [Bitcoin](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/data/data/OE_BTC/limit_order_book.pdf) |
+|  DJ30   | [YahooFinance](https://pypi.org/project/yfinance/) |   US Stock    |       2012/01/01-2021/12/31, 1day        |  OHLCV   |         [DJ30](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/data/dj30/DJ30.pdf)          |
+|   FX    |    [Kaggle](https://pypi.org/project/yfinance/)    |      FX       |       2000/01/01-2019/12/31, 1day        |  OHLCV   |         [FX](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/data/exchange/FX.pdf)          |
+| Crypto  |    [Kaggle](https://pypi.org/project/yfinance/)    |    Crypto     |       2013/04/29-2021/07/06, 1day        |  OHLCV   |        [Crypto](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/data/BTC/Crypto.pdf)        |
+|  SZ50   | [YahooFinance](https://pypi.org/project/yfinance/) | CN Securities |       2009/01/02-2021-01-01, 1day        |  OHLCV   |         [SZ50](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/data/sz50/SZ50.pdf)          |
+| Bitcoin |                     [Kaggle]()                     |    Crypto     | 2021-04-07 11:33-2021-04-19 09:54 , 1min |   LOB    | [Bitcoin](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/data/data/OE_BTC/limit_order_book.pdf) |
 
 OHLCV: open, high, low, and close prices; volume: corresponding trading volume
 
@@ -179,7 +179,7 @@ Users may download data from the following data source with personal account:
 | [YahooFinance](https://pypi.org/project/yfinance/)                                            | US Securities          | Frequency-specific, 1min | 2,000/hour            | OHLCV                 |
 
 ## How to Use Your Own Data
-TradeMaster supports financial data with open, high, low, close, volume (OHLCV) raw informations as:
+Modernise-TradeMaster supports financial data with open, high, low, close, volume (OHLCV) raw informations as:
 
 <div align="center">
 <img align="center" src=figure/ohlcv.jpg width="70%"/>
@@ -250,13 +250,29 @@ We plan to support limit order book (LOB) and altervative data such as text and 
 
 [PRUDEX-Compass: Towards Systematic Evaluation of Reinforcement Learning in Financial Markets](https://openreview.net/forum?id=Vhb-awTdHCh)
 
-## Contact
-- This repository is developed and maintained by [AMI](https://personal.ntu.edu.sg/boan/) group at [Nanyang Technological University](https://www.ntu.edu.sg/)
-- If you want to make contributions to `TradeMaster`, please [create pull requests](https://github.com/TradeMaster-NTU/TradeMaster/compare).
+## What is Reinforcement Learning?
 
-## Join Us
-We have positions for software engineer, RA and postdoc. If you are interested in working at the intersection of RL and financial trading, feel free to send an email to shuo003@e.ntu.edu.sg with your CV.
+Reinforcement learning (RL) is a machine-learning paradigm where an **agent** learns to make decisions by interacting with an **environment**, receiving **rewards** (positive or negative feedback), and updating its policy to maximize cumulative reward over time. In trading, the agent observes market states (prices, technical indicators, macro signals), selects actions (buy, sell, hold, portfolio weights), and learns from profit-and-loss outcomes to develop adaptive, risk-aware strategies.
+
+## Base Platform & Extending with Your Own Data
+
+Modernise-TradeMaster is intentionally built as a modular base platform for RL-driven trading research:
+
+- **Pluggable market simulators** (`env/`) for algorithmic trading (AT), order execution (OE), and portfolio management (PM).
+- **Agent zoo** (`agent/`) with reference implementations of DeepScalper, EIIE, SARL, PPO, SAC, and more.
+- **Data toolkit** (`data/`) for acquisition, preprocessing, technical indicators, and missing-value imputation.
+- **Evaluation toolkit** (`visualization/`) including PRUDEX-Compass and PRIDE-Star.
+
+To add a new data source, implement a small loader under `data_extensions/` (see `data_extensions/README.md`) and wire it into your experiment config. The platform standardizes on OHLCV inputs and expects a `pandas.DataFrame` with `date`, `open`, `high`, `low`, `close`, `volume` columns.
+
+## Attribution
+
+Modernise-TradeMaster is an independent modernisation and extension of the original open-source Modernise-TradeMaster RL-for-trading platform. Original contributors are acknowledged in `NOTICE.md`.
+
+## Contact
+
+- Maintainer: [H Tan](mailto:eewnah1@gmail.com)
 
 ## Competition
-[TradeMaster Cup 2022](https://codalab.lisn.upsaclay.fr/competitions/8440?secret_key=51d5952f-d68d-47d9-baef-6032445dea01)
+[Modernise-TradeMaster Cup 2022](https://codalab.lisn.upsaclay.fr/competitions/8440?secret_key=51d5952f-d68d-47d9-baef-6032445dea01)
 

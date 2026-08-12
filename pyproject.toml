@@ -3,8 +3,10 @@ requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "lumache"
-authors = [{name = "Graziella", email = "graziella@lumache"}]
+name = "Modernise-TradeMaster"
+authors = [{name = "H Tan", email = "eewnah1@gmail.com"}]
 dynamic = ["version", "description"]
 
-[doc]=["myst-parser=0.18.1",]
+dependencies = [
+    "myst-parser>=0.18.1",
+]

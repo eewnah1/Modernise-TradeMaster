@@ -9,10 +9,10 @@ DeepScalper use deep q network to optimize the reward sum got from reinforcement
 
 
 ## Notebook and Script
-In this notebook, we implement the training and testing process of DeepScalper based on the TradeMaster framework.
+In this notebook, we implement the training and testing process of DeepScalper based on the Modernise-TradeMaster framework.
 
-[Tutorial1_DeepScalper](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial1_DeepScalper.ipynb)
+[Tutorial1_DeepScalper](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial1_DeepScalper.ipynb)
 
 And this is the script for training and testing.
 
-[train.py](https://github.com/TradeMaster-NTU/TradeMaster/blob/1.0.0/tools/algorithmic_trading/train.py)
+[train.py](https://github.com/eewnah1/Modernise-TradeMaster/blob/1.0.0/tools/algorithmic_trading/train.py)

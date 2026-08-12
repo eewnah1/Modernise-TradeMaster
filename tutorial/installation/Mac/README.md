@@ -26,20 +26,20 @@ Installation of system packages on Mac requires Homebrew. With Homebrew installe
 ```
 brew install cmake openmpi
 ```
-Step 4: Install [`TradeMaster`](https://github.com/TradeMaster-NTU/TradeMaster)
+Step 4: Install [`Modernise-TradeMaster`](https://github.com/eewnah1/Modernise-TradeMaster)
 - Open a terminal amd type 
   ```
-  conda create --name TradeMaster python=3.7.13
+  conda create --name Modernise-TradeMaster python=3.7.13
   ```
-  to install a new conda environment for `TradeMaster`
-- Install `TradeMaster`
+  to install a new conda environment for `Modernise-TradeMaster`
+- Install `Modernise-TradeMaster`
   ```
-   git clone https://github.com/TradeMaster-NTU/TradeMaster.git
+   git clone https://github.com/eewnah1/Modernise-TradeMaster.git
   ```
-- Open the folder `TradeMaster` and open a terminal under the same position
-- Install the dependency of `TradeMaster`, run the command:
+- Open the folder `Modernise-TradeMaster` and open a terminal under the same position
+- Install the dependency of `Modernise-TradeMaster`, run the command:
    ```
-   conda activate TradeMaster
+   conda activate Modernise-TradeMaster
    cd ./requirement
    pip install -r requirements.txt
    conda install pytorch torchvision torchaudio -c pytorch

@@ -1,4 +1,4 @@
-Welcome to TradeMaster's documentation!
+Welcome to Modernise-TradeMaster's documentation!
 ===================================
 
 .. note::

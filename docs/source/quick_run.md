@@ -1,5 +1,5 @@
 # Quick Start
 
-Use trademaster to train and evaluate a profitable RL agent in one line of code.
+Use Modernise-TradeMaster to train and evaluate a profitable RL agent in one line of code.
 
 

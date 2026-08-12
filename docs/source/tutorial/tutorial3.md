@@ -8,10 +8,10 @@ to be encoded and augmented to the final state s for SARL. The asset movement si
 policy network will generate the portfolio management strategy from the augmented state s.
 
 ## Notebook and Script
-In this notebook, we implement the training and testing process of SARL based on the TradeMaster framework.
+In this notebook, we implement the training and testing process of SARL based on the Modernise-TradeMaster framework.
 
-[Tutorial3_SARL](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial3_SARL.ipynb)
+[Tutorial3_SARL](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial3_SARL.ipynb)
 
 And this is the script for training and testing.
 
-[train_sarl.py](https://github.com/TradeMaster-NTU/TradeMaster/blob/main/tutorial/Tutorial3_SARL.ipynb)
+[train_sarl.py](https://github.com/eewnah1/Modernise-TradeMaster/blob/main/tutorial/Tutorial3_SARL.ipynb)
