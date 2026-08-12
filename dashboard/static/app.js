@@ -940,7 +940,17 @@ async function loadRisk(jobId) {
   try {
     const risk = await getJSON(`/api/v1/jobs/${jobId}/risk`);
     renderRisk(risk);
-    renderExposure(risk.exposure || {});
+    const exposure = risk.exposure || {};
+    const mergedExposure = {
+      long_pct: exposure.long_pct ?? risk.long_pct,
+      short_pct: exposure.short_pct ?? risk.short_pct,
+      cash_pct: exposure.cash_pct ?? risk.cash_pct,
+      net_exposure_pct: exposure.net_exposure_pct ?? risk.net_exposure_pct,
+      gross_exposure_pct: exposure.gross_exposure_pct ?? risk.gross_exposure_pct,
+      max_concentration_pct: exposure.max_concentration_pct ?? risk.max_concentration_pct,
+      sector_exposure: exposure.sector_exposure ?? risk.sector_exposure,
+    };
+    renderExposure(mergedExposure);
   } catch (err) {
     document.getElementById("risk-metrics").innerHTML = `<p class="message error">${err.message}</p>`;
     document.getElementById("risk-exposure").innerHTML = '<p class="message">No exposure data.</p>';
@@ -989,11 +999,20 @@ function renderExposure(exposure) {
     { label: "Gross Exposure", key: "gross_exposure_pct", cls: "long" },
     { label: "Max Concentration", key: "max_concentration_pct", cls: "cash" },
   ];
-  container.innerHTML = rows.map((r) => {
+  let html = rows.map((r) => {
     const v = exposure[r.key];
     if (v == null || !Number.isFinite(v)) return "";
     return `<div class="exposure-row"><label>${r.label}</label><div class="exposure-track"><div class="exposure-fill ${r.cls}" style="width:${Math.min(100, Math.max(0, v))}%"></div></div><div class="exposure-value">${v.toFixed(2)}%</div></div>`;
   }).join("");
+  if (exposure.sector_exposure && Object.keys(exposure.sector_exposure).length > 0) {
+    html += '<h4 class="exposure-subtitle">Sector Exposure</h4>';
+    html += Object.entries(exposure.sector_exposure).map(([name, v]) => {
+      if (v == null || !Number.isFinite(v)) return "";
+      const pct = Math.min(100, Math.max(0, v));
+      return `<div class="exposure-row"><label>${name}</label><div class="exposure-track"><div class="exposure-fill cash" style="width:${pct}%"></div></div><div class="exposure-value">${v.toFixed(2)}%</div></div>`;
+    }).join("");
+  }
+  container.innerHTML = html;
 }
 
 // ---------------------------------------------------------------------------

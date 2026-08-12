@@ -440,6 +440,7 @@ tr.selected td { background: rgba(59, 130, 246, 0.12); }
 
 /* Exposure bars */
 .exposure-bars { display: flex; flex-direction: column; gap: 14px; }
+.exposure-subtitle { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 8px; }
 .exposure-row { display: flex; align-items: center; gap: 14px; font-size: 13px; }
 .exposure-row label { width: 120px; color: var(--muted); margin: 0; }
 .exposure-track { flex: 1; height: 10px; background: var(--panel-3); border-radius: 5px; overflow: hidden; }

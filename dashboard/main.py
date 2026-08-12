@@ -40,6 +40,18 @@ EXPERIMENT_ROOT = REPO_ROOT / "experiment"
 app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.3.0")
 START_TIME = time.time()
 
+# Static sector mapping for the supported data universes used by the dashboard demos.
+UNIVERSE_SECTOR = {
+    "BTC": "Cryptocurrency",
+    "BTC_even": "Cryptocurrency",
+    "BTC_for_iRDPG": "Cryptocurrency",
+    "OE_BTC": "Cryptocurrency",
+    "ETH": "Cryptocurrency",
+    "dj30": "US Equities",
+    "sz50": "China A-Shares",
+    "exchange": "FX / Commodities",
+}
+
 WORK_ROOT = Path(tempfile.gettempdir()) / "mtm_dashboard_jobs"
 job_manager = JobManager(work_root=WORK_ROOT, repo_root=REPO_ROOT)
 
@@ -438,13 +450,34 @@ async def get_results(job_id: str) -> Dict[str, Any]:
     }
 
 
+def _sector_exposure(universe: str) -> Dict[str, float]:
+    sector = UNIVERSE_SECTOR.get(universe, "Diversified / Unknown")
+    return {sector: 100.0}
+
+
 @app.get("/api/v1/jobs/{job_id}/risk")
 async def get_job_risk(job_id: str) -> Dict[str, Any]:
     """Portfolio risk telemetry for a completed job."""
-    if not job_manager.get(job_id):
+    job = job_manager.get(job_id)
+    if not job:
         raise HTTPException(status_code=404, detail="job not found")
     analytics_data = _load_job_analytics(job_id)
-    return analytics_data.get("risk", {})
+    risk = analytics_data.get("risk", {}) or {}
+    data_path = job.get("meta", {}).get("data", "")
+    universe = Path(data_path).parent.name if data_path else ""
+    risk["sector_exposure"] = _sector_exposure(universe)
+    risk.setdefault(
+        "exposure",
+        {
+            "long_pct": risk.get("long_pct"),
+            "short_pct": risk.get("short_pct"),
+            "cash_pct": risk.get("cash_pct"),
+            "net_exposure_pct": risk.get("net_exposure_pct"),
+            "gross_exposure_pct": risk.get("gross_exposure_pct"),
+            "max_concentration_pct": risk.get("max_concentration_pct"),
+        },
+    )
+    return risk
 
 
 @app.get("/api/v1/jobs/{job_id}/compass")
