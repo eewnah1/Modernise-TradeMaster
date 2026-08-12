@@ -23,6 +23,9 @@
         <button class="nav-item" data-tab="setup"><i class="fa-solid fa-flask"></i><span>Experiment Setup</span></button>
         <button class="nav-item" data-tab="jobs"><i class="fa-solid fa-server"></i><span>Jobs & Logs</span></button>
         <button class="nav-item" data-tab="results"><i class="fa-solid fa-chart-line"></i><span>Results</span></button>
+        <button class="nav-item" data-tab="risk"><i class="fa-solid fa-shield-halved"></i><span>Risk Telemetry</span></button>
+        <button class="nav-item" data-tab="radar"><i class="fa-solid fa-bullseye"></i><span>Compass & Star</span></button>
+        <button class="nav-item" data-tab="market"><i class="fa-solid fa-chart-simple"></i><span>Market Depth</span></button>
         <button class="nav-item" data-tab="resources"><i class="fa-solid fa-database"></i><span>Configs & Data</span></button>
       </nav>
       <div class="nav-footer">
@@ -56,6 +59,7 @@
 
           <div class="cards" id="home-stats">
             <div class="stat-card"><div class="label">Active Jobs</div><div class="value" id="stat-active">-</div><div class="sub">running experiments</div></div>
+            <div class="stat-card"><div class="label">Queue</div><div class="value" id="stat-queued">-</div><div class="sub" id="queue-sub">queued / workers</div></div>
             <div class="stat-card"><div class="label">Agents</div><div class="value" id="stat-agents">-</div><div class="sub">config files</div></div>
             <div class="stat-card"><div class="label">Environments</div><div class="value" id="stat-envs">-</div><div class="sub">market simulators</div></div>
             <div class="stat-card"><div class="label">Datasets</div><div class="value" id="stat-datasets">-</div><div class="sub">CSV universes</div></div>
@@ -126,6 +130,7 @@
         <section id="jobs" class="tab">
           <div class="panel">
             <div class="panel-header"><h3>Job Queue</h3><div><button class="secondary" id="refresh-jobs"><i class="fa-solid fa-rotate"></i> Refresh</button></div></div>
+            <div id="queue-banner" class="queue-banner"><span class="backend-badge">local</span><span>Workers: <strong id="queue-workers">-</strong></span><span>Queued: <strong id="queue-queued">-</strong></span><span>Running: <strong id="queue-running">-</strong></span><span>Completed: <strong id="queue-completed">-</strong></span></div>
             <div class="job-table" id="jobs-table-wrap"><p class="message">Loading jobs...</p></div>
           </div>
           <div class="panel">
@@ -165,6 +170,66 @@
             <div class="files-list" id="result-files"></div>
             <h4 style="margin-top:22px">Selected File</h4>
             <div class="preview-frame"><pre id="result-file-content">Click a file above to view or download raw contents.</pre></div>
+          </div>
+        </section>
+
+        <section id="risk" class="tab">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Portfolio Risk Telemetry</h3>
+              <select id="risk-job" style="width:340px"><option value="">-- choose a completed job --</option></select>
+            </div>
+            <div id="risk-metrics" class="metrics"><p class="message">Select a completed job to view risk telemetry.</p></div>
+            <div class="panel" style="margin-top:22px">
+              <h3>Exposure Breakdown</h3>
+              <div id="risk-exposure" class="exposure-bars"><p class="message">No exposure data.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="radar" class="tab">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>PRUDEX-Compass &amp; PRIDE-Star</h3>
+              <select id="radar-job" style="width:340px"><option value="">-- choose a completed job --</option></select>
+            </div>
+            <div class="chart-row">
+              <div class="chart-wrap"><canvas id="prudex-chart"></canvas></div>
+              <div class="chart-wrap"><canvas id="pride-chart"></canvas></div>
+            </div>
+            <div class="panel" style="margin-top:22px">
+              <h3>Compass Outer Measures</h3>
+              <div id="compass-outer" class="badges"><p class="message">Select a job to load compass data.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="market" class="tab">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Limit Order Book &amp; Order Flow</h3>
+              <div style="display:flex;gap:10px;align-items:center">
+                <input type="text" id="lob-ticker" value="SPY" style="width:120px;text-transform:uppercase" />
+                <button class="secondary" id="lob-refresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+              </div>
+            </div>
+            <div class="cards" id="lob-stats" style="grid-template-columns: repeat(5, 1fr)">
+              <div class="stat-card"><div class="label">Mid</div><div class="value" id="lob-mid">-</div></div>
+              <div class="stat-card"><div class="label">Spread</div><div class="value" id="lob-spread">-</div></div>
+              <div class="stat-card"><div class="label">Bid Depth</div><div class="value" id="lob-bid-depth">-</div></div>
+              <div class="stat-card"><div class="label">Ask Depth</div><div class="value" id="lob-ask-depth">-</div></div>
+              <div class="stat-card"><div class="label">Imbalance</div><div class="value" id="lob-imbalance">-</div></div>
+            </div>
+            <div class="grid-2" style="margin-top:22px">
+              <div class="panel" style="margin:0">
+                <h3>Order Book Ladder</h3>
+                <div id="lob-ladder" class="lob-ladder"><p class="message">Loading...</p></div>
+              </div>
+              <div class="panel" style="margin:0">
+                <h3>Order Flow Tape</h3>
+                <div id="lob-flow" class="lob-flow"><p class="message">Loading...</p></div>
+              </div>
+            </div>
           </div>
         </section>
 

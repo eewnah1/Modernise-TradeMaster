@@ -57,8 +57,15 @@ async def health():
     return {
         "status": "ok",
         "active_jobs": sum(1 for j in job_manager.jobs.values() if j["status"] == "running"),
+        "queued_jobs": sum(1 for j in job_manager.jobs.values() if j["status"] == "queued"),
         "version": app.version,
     }
+
+
+@app.get("/api/v1/queue/stats")
+async def queue_stats() -> Dict[str, Any]:
+    """Runtime status of the distributed task queue."""
+    return job_manager.queue_stats()
 
 
 # ---------------------------------------------------------------------------
@@ -372,6 +379,8 @@ async def delete_job(job_id: str):
 def _read_job_equity_and_trades(job_id: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Optional[np.ndarray]]:
     """Load equity, trades and the dataset close prices for a job."""
     job = job_manager.get(job_id)
+    if not job:
+        return [], [], None
     work_dir = Path(job["work_dir"])
 
     equity = []
@@ -399,6 +408,12 @@ def _read_job_equity_and_trades(job_id: str) -> Tuple[List[Dict[str, Any]], List
     return equity, trades, close
 
 
+def _load_job_analytics(job_id: str) -> Dict[str, Any]:
+    """Compute analytics bundle for a completed job."""
+    equity, trades, close = _read_job_equity_and_trades(job_id)
+    return analytics.compute_result_analytics(equity, trades, close)
+
+
 @app.get("/api/v1/jobs/{job_id}/results")
 async def get_results(job_id: str) -> Dict[str, Any]:
     """Read metrics, equity curve, trades, analytics and output files from a completed job."""
@@ -418,10 +433,41 @@ async def get_results(job_id: str) -> Dict[str, Any]:
         "metrics": metrics,
         "analytics": analytics_data,
         "equity": equity,
-        "trades": trades,
         "drawdown": analytics_data["rolling"].get("drawdown", []),
         "files": job_manager.list_files(job_id),
     }
+
+
+@app.get("/api/v1/jobs/{job_id}/risk")
+async def get_job_risk(job_id: str) -> Dict[str, Any]:
+    """Portfolio risk telemetry for a completed job."""
+    if not job_manager.get(job_id):
+        raise HTTPException(status_code=404, detail="job not found")
+    analytics_data = _load_job_analytics(job_id)
+    return analytics_data.get("risk", {})
+
+
+@app.get("/api/v1/jobs/{job_id}/compass")
+async def get_job_compass(job_id: str) -> Dict[str, Any]:
+    """PRUDEX-Compass evaluation for a completed job."""
+    job = job_manager.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="job not found")
+    analytics_data = _load_job_analytics(job_id)
+    agent_type = job.get("type", "unknown")
+    data_path = job.get("meta", {}).get("data", "")
+    return analytics.compute_prudex_compass(
+        analytics_data, agent_type=agent_type, data_path=data_path
+    )
+
+
+@app.get("/api/v1/jobs/{job_id}/pride")
+async def get_job_pride(job_id: str) -> Dict[str, Any]:
+    """PRIDE-Star metric radar for a completed job."""
+    if not job_manager.get(job_id):
+        raise HTTPException(status_code=404, detail="job not found")
+    analytics_data = _load_job_analytics(job_id)
+    return analytics.compute_pride_star(analytics_data)
 
 
 # ---------------------------------------------------------------------------
@@ -504,6 +550,116 @@ def _fetch_market_snapshot() -> Dict[str, Any]:
         except Exception as exc:
             quotes.append({"ticker": ticker, "error": str(exc)})
     return {"quotes": quotes, "timestamp": time.time()}
+
+
+def _build_lob(mid: float, ticker: str, levels: int = 10) -> Dict[str, Any]:
+    """Construct a synthetic order-book ladder around the last mid price."""
+    base_spread_bps = 5.0 if "USD" not in ticker.upper() else 15.0
+    base_spread = mid * base_spread_bps / 10000.0
+    level_step = base_spread / 2.0
+
+    bids = []
+    asks = []
+    total_bid_size = 0
+    total_ask_size = 0
+
+    for i in range(levels):
+        offset = base_spread / 2.0 + i * level_step
+        bid_price = mid - offset
+        ask_price = mid + offset
+        bid_size = int(max(1, round(1000 * np.exp(-0.2 * i) + np.random.randint(-50, 50))))
+        ask_size = int(max(1, round(1000 * np.exp(-0.2 * i) + np.random.randint(-50, 50))))
+        bids.append({
+            "level": i + 1,
+            "price": round(float(bid_price), 4),
+            "size": bid_size,
+            "cum_size": None,
+        })
+        asks.append({
+            "level": i + 1,
+            "price": round(float(ask_price), 4),
+            "size": ask_size,
+            "cum_size": None,
+        })
+        total_bid_size += bid_size
+        total_ask_size += ask_size
+
+    cum_bid = 0
+    for b in bids:
+        cum_bid += b["size"]
+        b["cum_size"] = cum_bid
+    cum_ask = 0
+    for a in asks:
+        cum_ask += a["size"]
+        a["cum_size"] = cum_ask
+
+    spread = round(asks[0]["price"] - bids[0]["price"], 4)
+    spread_bps = round((spread / mid) * 10000, 2) if mid else 0.0
+    total_depth = total_bid_size + total_ask_size
+    imbalance = round((total_bid_size - total_ask_size) / max(total_depth, 1), 4)
+
+    flow = []
+    for _ in range(20):
+        side = "buy" if np.random.random() > 0.5 else "sell"
+        size = int(np.random.randint(10, 200))
+        jitter = np.random.uniform(0, max(spread / 2.0, 0.01))
+        price = round(mid + (jitter if side == "buy" else -jitter), 4)
+        flow.append({
+            "side": side,
+            "size": size,
+            "price": price,
+            "timestamp": round(time.time() - np.random.uniform(0, 60), 2),
+        })
+    flow.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    return {
+        "ticker": ticker,
+        "mid": round(float(mid), 4),
+        "spread": spread,
+        "spread_bps": spread_bps,
+        "bid_depth": total_bid_size,
+        "ask_depth": total_ask_size,
+        "total_depth": total_depth,
+        "imbalance": imbalance,
+        "bids": bids,
+        "asks": asks,
+        "flow": flow,
+        "timestamp": time.time(),
+    }
+
+
+def _fetch_lob_snapshot(ticker: str = "SPY") -> Dict[str, Any]:
+    """Fetch last price and build a synthetic LOB ladder."""
+    if yf is None:
+        return {"error": "yfinance not installed", "ticker": ticker}
+    try:
+        hist = yf.Ticker(ticker).history(period="2d", interval="1d")
+        if hist is None or hist.empty:
+            return {"error": f"no market data for {ticker}", "ticker": ticker}
+        mid = float(hist["Close"].dropna().iloc[-1])
+        return _build_lob(mid, ticker)
+    except Exception as exc:
+        return {"error": str(exc), "ticker": ticker}
+
+
+LOB_CACHE: Dict[str, Any] = {"data": {}, "ts": 0.0}
+
+
+@app.get("/api/v1/market/lob")
+async def market_lob(ticker: str = Query("SPY", description="Underlying ticker for LOB")) -> Dict[str, Any]:
+    """Simulated 10-level limit order book and order-flow tape.
+
+    Uses live yfinance close as the mid price and generates synthetic depth
+    around it. This is a visual/quantitative representation suitable for
+    dashboard exploration; for live production LOB data, wire a real feed.
+    """
+    now = time.time()
+    cache_key = ticker.upper()
+    if now - LOB_CACHE["ts"] > 5 or LOB_CACHE["data"].get("ticker") != cache_key:
+        data = await run_in_threadpool(lambda: _fetch_lob_snapshot(cache_key))
+        LOB_CACHE["data"] = data
+        LOB_CACHE["ts"] = now
+    return LOB_CACHE["data"]
 
 
 @app.get("/api/v1/market/snapshot")

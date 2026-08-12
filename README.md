@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://louis-gloves-actual-gmt.trycloudflare.com](https://louis-gloves-actual-gmt.trycloudflare.com)** (no sign-in)
+**[Live Dashboard — https://versus-findarticles-constantly-fraction.trycloudflare.com](https://versus-findarticles-constantly-fraction.trycloudflare.com)** (no sign-in)
 
 </div>
 
@@ -49,7 +49,7 @@ Modernise-TradeMaster could be beneficial to a wide range of communities includi
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
-**Live public dashboard:** https://sphere-seminars-trademarks-tba.trycloudflare.com
+**Live public dashboard:** https://versus-findarticles-constantly-fraction.trycloudflare.com
 
 ```bash
 pip install -r dashboard/requirements.txt

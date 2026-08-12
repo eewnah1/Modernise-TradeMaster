@@ -5,13 +5,17 @@ let state = {
   agents: [],
   envs: [],
   experiments: [],
+  jobs: [],
   selectedJobId: null,
   selectedResultJobId: null,
+  selectedRiskJobId: null,
+  selectedRadarJobId: null,
   selectedResource: null,
   selectedFileName: null,
   tailLines: 200,
   eventSource: null,
   system: {},
+  lobTicker: "SPY",
 };
 
 // Helpers
@@ -77,6 +81,9 @@ function switchTab(name) {
   document.getElementById("page-title").textContent = btn.querySelector("span").textContent;
   if (name === "jobs") loadJobs();
   if (name === "results") loadResultsJobs();
+  if (name === "risk") { loadRiskJobs(); if (state.selectedRiskJobId) loadRisk(state.selectedRiskJobId); }
+  if (name === "radar") { loadRadarJobs(); if (state.selectedRadarJobId) loadRadar(state.selectedRadarJobId); }
+  if (name === "market") loadLOB();
   if (name === "resources") loadResources();
 }
 
@@ -94,6 +101,10 @@ async function init() {
   document.getElementById("run-experiment").addEventListener("click", runExperiment);
   document.getElementById("refresh-jobs").addEventListener("click", loadJobs);
   document.getElementById("result-job").addEventListener("change", (e) => loadResult(e.target.value));
+  document.getElementById("risk-job").addEventListener("change", (e) => { state.selectedRiskJobId = e.target.value; loadRisk(e.target.value); });
+  document.getElementById("radar-job").addEventListener("change", (e) => { state.selectedRadarJobId = e.target.value; loadRadar(e.target.value); });
+  document.getElementById("lob-ticker").addEventListener("change", (e) => { state.lobTicker = e.target.value.toUpperCase(); });
+  document.getElementById("lob-refresh").addEventListener("click", () => { state.lobTicker = document.getElementById("lob-ticker").value.toUpperCase() || "SPY"; loadLOB(); });
   document.getElementById("tail-50").addEventListener("click", () => { state.tailLines = 50; showLog(); });
   document.getElementById("tail-500").addEventListener("click", () => { state.tailLines = 500; showLog(); });
 
@@ -124,14 +135,18 @@ async function init() {
   setStatus("ok", "online");
   loadMarket();
 
-  setInterval(() => { refreshHealth(); loadMarket(); }, 60000);
+  setInterval(() => { refreshHealth(); loadMarket(); loadQueueStats(); }, 60000);
   setInterval(() => {
     if (document.getElementById("jobs").classList.contains("active")) loadJobs();
     if (document.getElementById("results").classList.contains("active")) loadResultsJobs();
+    if (document.getElementById("risk").classList.contains("active") && state.selectedRiskJobId) loadRisk(state.selectedRiskJobId);
+    if (document.getElementById("radar").classList.contains("active") && state.selectedRadarJobId) loadRadar(state.selectedRadarJobId);
+    if (document.getElementById("market").classList.contains("active")) loadLOB();
     loadSystem();
-  }, 2000);
+  }, 5000);
 
   loadSystem();
+  loadQueueStats();
 }
 
 function populateSelect(id, items, labelFn, valueFn) {
@@ -159,9 +174,10 @@ function setStatus(cls, text) {
 async function refreshHealth() {
   try {
     const h = await getJSON("/health");
-    setStatus("ok", `online · ${h.active_jobs || 0} running`);
+    setStatus("ok", `online · ${h.active_jobs || 0} running · ${h.queued_jobs || 0} queued`);
     const activeEl = document.getElementById("stat-active");
     if (activeEl) activeEl.textContent = h.active_jobs || 0;
+    loadQueueStats();
   } catch (e) {
     setStatus("error", "offline");
   }
@@ -173,6 +189,7 @@ function updateHomeStats(agents, envs, datasets, system) {
   document.getElementById("stat-datasets").textContent = datasets.length;
   state.system = system;
   loadSystem();
+  loadQueueStats();
 }
 
 function loadSystem() {
@@ -237,8 +254,10 @@ async function refreshAll() {
   state.agents = agents;
   state.envs = envs;
   state.system = system;
+  state.jobs = jobs;
   updateHomeStats(agents, envs, datasets, system);
   loadMarket();
+  loadQueueStats();
   if (document.getElementById("jobs").classList.contains("active")) renderJobs(jobs);
   showToast("Dashboard refreshed");
 }
@@ -254,6 +273,9 @@ function initPalette() {
     { name: "New Experiment", icon: "fa-flask", action: () => switchTab("setup") },
     { name: "Jobs & Logs", icon: "fa-server", action: () => switchTab("jobs") },
     { name: "Results", icon: "fa-chart-line", action: () => switchTab("results") },
+    { name: "Risk Telemetry", icon: "fa-shield-halved", action: () => switchTab("risk") },
+    { name: "Compass & Star", icon: "fa-bullseye", action: () => switchTab("radar") },
+    { name: "Market Depth", icon: "fa-chart-simple", action: () => switchTab("market") },
     { name: "Configs & Data", icon: "fa-database", action: () => switchTab("resources") },
     { name: "Run Q-Learning Demo", icon: "fa-play", action: () => { switchTab("setup"); runDemo(); } },
     { name: "Refresh Dashboard", icon: "fa-rotate", action: refreshAll },
@@ -361,7 +383,9 @@ async function loadJobs() {
   const wrap = document.getElementById("jobs-table-wrap");
   try {
     const jobs = await getJSON("/api/v1/jobs");
+    state.jobs = jobs;
     document.getElementById("stat-active").textContent = jobs.filter((j) => j.status === "running").length;
+    loadQueueStats();
     renderJobs(jobs);
     if (state.selectedJobId) showLog();
   } catch (e) {
@@ -376,7 +400,7 @@ function renderJobs(jobs) {
     return;
   }
   const html = [
-    "<table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Progress</th><th>Created</th><th>Duration</th><th>Actions</th></tr></thead><tbody>",
+    "<table><thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Priority</th><th>Queue</th><th>Progress</th><th>Created</th><th>Duration</th><th>Actions</th></tr></thead><tbody>",
   ];
   jobs.forEach((job) => {
     const duration = job.finished ? `${((job.finished - job.started) / 60).toFixed(1)} min` : "running";
@@ -384,11 +408,14 @@ function renderJobs(jobs) {
     const liveMetrics = job.liveMetrics || {};
     const progress = liveMetrics.progress_pct || 0;
     const progressBar = `<div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>`;
+    const queuePos = job.queue_position != null ? (job.queue_position === 0 ? "next" : `#${job.queue_position}`) : "—";
     html.push(`
       <tr ${selected}>
         <td><strong>${job.id}</strong></td>
         <td>${job.type}</td>
         <td><span class="status-badge ${job.status}">${job.status}</span></td>
+        <td>${job.priority != null ? job.priority : "—"}</td>
+        <td>${queuePos}</td>
         <td>${job.status === "running" ? progressBar : "—"}</td>
         <td>${new Date(job.created).toLocaleString()}</td>
         <td>${duration}</td>
@@ -857,6 +884,302 @@ function computeColumnStats(rows, columns) {
     return `<tr><td>${c}</td><td>${mean.toFixed(4)}</td><td>${std.toFixed(4)}</td><td>${min.toFixed(4)}</td><td>${max.toFixed(4)}</td></tr>`;
   }).join("");
   return `<table>${header}${body}</table>`;
+}
+
+// ---------------------------------------------------------------------------
+// Queue stats
+// ---------------------------------------------------------------------------
+async function loadQueueStats() {
+  try {
+    const s = await getJSON("/api/v1/queue/stats");
+    const queued = s.queued_jobs != null ? s.queued_jobs : (s.queued != null ? s.queued : 0);
+    const running = s.running_jobs != null ? s.running_jobs : (s.running != null ? s.running : 0);
+    const completed = s.completed_jobs != null ? s.completed_jobs : (s.completed != null ? s.completed : 0);
+    const workers = s.max_workers != null ? s.max_workers : (s.workers ? s.workers.length : "?");
+    const backend = s.backend || "local";
+
+    const queuedEl = document.getElementById("stat-queued");
+    if (queuedEl) queuedEl.textContent = queued;
+    const sub = document.getElementById("queue-sub");
+    if (sub) sub.textContent = `${backend} · ${workers} workers`;
+    const badge = document.querySelector("#queue-banner .backend-badge");
+    if (badge) badge.textContent = backend;
+    const w = document.getElementById("queue-workers");
+    if (w) w.textContent = workers;
+    const q = document.getElementById("queue-queued");
+    if (q) q.textContent = queued;
+    const r = document.getElementById("queue-running");
+    if (r) r.textContent = running;
+    const c = document.getElementById("queue-completed");
+    if (c) c.textContent = completed;
+  } catch (e) { /* queue may be unavailable */ }
+}
+
+// ---------------------------------------------------------------------------
+// Risk telemetry
+// ---------------------------------------------------------------------------
+async function loadRiskJobs() {
+  const sel = document.getElementById("risk-job");
+  try {
+    const jobs = await getJSON("/api/v1/jobs");
+    const current = sel.value;
+    sel.innerHTML = '<option value="">-- choose a completed job --</option>';
+    jobs.filter((j) => j.status === "success").forEach((j) => {
+      const opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = `${j.id} · ${j.type} · ${new Date(j.created).toLocaleString()}`;
+      sel.appendChild(opt);
+    });
+    if (current && Array.from(sel.options).some((o) => o.value === current)) sel.value = current;
+  } catch (e) { /* ignore */ }
+}
+
+async function loadRisk(jobId) {
+  if (!jobId) return;
+  state.selectedRiskJobId = jobId;
+  try {
+    const risk = await getJSON(`/api/v1/jobs/${jobId}/risk`);
+    renderRisk(risk);
+    renderExposure(risk.exposure || {});
+  } catch (err) {
+    document.getElementById("risk-metrics").innerHTML = `<p class="message error">${err.message}</p>`;
+    document.getElementById("risk-exposure").innerHTML = '<p class="message">No exposure data.</p>';
+  }
+}
+
+function renderRisk(risk) {
+  const container = document.getElementById("risk-metrics");
+  container.innerHTML = "";
+  if (!risk || Object.keys(risk).length === 0) {
+    container.innerHTML = '<p class="message">No risk data available.</p>';
+    return;
+  }
+  const cards = [
+    { label: "VaR 95% (%)", value: risk.var_95_pct, suffix: "%" },
+    { label: "CVaR 95% (%)", value: risk.cvar_95_pct, suffix: "%" },
+    { label: "Beta", value: risk.beta },
+    { label: "Alpha Annual %", value: risk.alpha_annual_pct, suffix: "%" },
+    { label: "Correlation", value: risk.correlation },
+    { label: "Max Drawdown %", value: risk.max_drawdown_pct, suffix: "%" },
+    { label: "Volatility Ann %", value: risk.volatility_annual_pct, suffix: "%" },
+    { label: "Gross Exposure %", value: risk.gross_exposure_pct, suffix: "%" },
+  ];
+  cards.forEach((c) => {
+    const v = c.value;
+    if (v == null || (typeof v === "number" && !Number.isFinite(v))) return;
+    const val = typeof v === "number" ? v.toFixed(4) : v;
+    const div = document.createElement("div");
+    div.className = "metric";
+    div.innerHTML = `<div class="value">${val}${c.suffix || ""}</div><div class="label">${c.label}</div>`;
+    container.appendChild(div);
+  });
+}
+
+function renderExposure(exposure) {
+  const container = document.getElementById("risk-exposure");
+  if (!exposure || Object.keys(exposure).length === 0) {
+    container.innerHTML = '<p class="message">No exposure data.</p>';
+    return;
+  }
+  const rows = [
+    { label: "Long", key: "long_pct", cls: "long" },
+    { label: "Short", key: "short_pct", cls: "short" },
+    { label: "Cash", key: "cash_pct", cls: "cash" },
+    { label: "Net Exposure", key: "net_exposure_pct", cls: "long" },
+    { label: "Gross Exposure", key: "gross_exposure_pct", cls: "long" },
+    { label: "Max Concentration", key: "max_concentration_pct", cls: "cash" },
+  ];
+  container.innerHTML = rows.map((r) => {
+    const v = exposure[r.key];
+    if (v == null || !Number.isFinite(v)) return "";
+    return `<div class="exposure-row"><label>${r.label}</label><div class="exposure-track"><div class="exposure-fill ${r.cls}" style="width:${Math.min(100, Math.max(0, v))}%"></div></div><div class="exposure-value">${v.toFixed(2)}%</div></div>`;
+  }).join("");
+}
+
+// ---------------------------------------------------------------------------
+// PRUDEX-Compass & PRIDE-Star
+// ---------------------------------------------------------------------------
+async function loadRadarJobs() {
+  const sel = document.getElementById("radar-job");
+  try {
+    const jobs = await getJSON("/api/v1/jobs");
+    const current = sel.value;
+    sel.innerHTML = '<option value="">-- choose a completed job --</option>';
+    jobs.filter((j) => j.status === "success").forEach((j) => {
+      const opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = `${j.id} · ${j.type} · ${new Date(j.created).toLocaleString()}`;
+      sel.appendChild(opt);
+    });
+    if (current && Array.from(sel.options).some((o) => o.value === current)) sel.value = current;
+  } catch (e) { /* ignore */ }
+}
+
+async function loadRadar(jobId) {
+  if (!jobId) return;
+  state.selectedRadarJobId = jobId;
+  try {
+    const [compass, pride] = await Promise.all([
+      getJSON(`/api/v1/jobs/${jobId}/compass`),
+      getJSON(`/api/v1/jobs/${jobId}/pride`),
+    ]);
+    renderCompass(compass);
+    renderPride(pride);
+  } catch (err) {
+    document.getElementById("compass-outer").innerHTML = `<p class="message error">${err.message}</p>`;
+  }
+}
+
+function radarChartOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      r: {
+        suggestedMin: 0,
+        suggestedMax: 100,
+        ticks: { color: "#8b9bb4", backdropColor: "transparent" },
+        grid: { color: "#243047" },
+        angleLines: { color: "#243047" },
+        pointLabels: { color: "#e8eef8", font: { size: 11 } },
+      },
+    },
+    plugins: {
+      legend: { labels: { color: "#e8eef8" } },
+    },
+  };
+}
+
+function renderCompass(compass) {
+  destroyChart("prudex");
+  const inner = compass.inner_level || {};
+  const labels = Object.keys(inner);
+  const data = Object.values(inner);
+  const ctx = document.getElementById("prudex-chart");
+  if (!ctx) return;
+  if (!labels.length) {
+    ctx.parentElement.innerHTML = "<p class='message'>No compass data.</p>";
+    return;
+  }
+  charts.prudex = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [{
+        label: compass.label || "PRUDEX-Compass",
+        data,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        pointBackgroundColor: "#3b82f6",
+        borderWidth: 2,
+        pointRadius: 4,
+      }],
+    },
+    options: radarChartOptions(),
+  });
+
+  const outer = compass.outer_level || {};
+  const container = document.getElementById("compass-outer");
+  const keys = Object.keys(outer);
+  if (keys.length === 0) {
+    container.innerHTML = '<p class="message">No outer measures.</p>';
+    return;
+  }
+  container.innerHTML = keys.map((k) => `<span class="badge ${outer[k] ? "active" : "inactive"}">${outer[k] ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>'} ${k}</span>`).join("");
+}
+
+function renderPride(pride) {
+  destroyChart("pride");
+  const labels = pride.labels || [];
+  const data = pride.values || [];
+  const ctx = document.getElementById("pride-chart");
+  if (!ctx) return;
+  if (!labels.length) {
+    ctx.parentElement.innerHTML = "<p class='message'>No PRIDE-Star data.</p>";
+    return;
+  }
+  charts.pride = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels,
+      datasets: [{
+        label: "PRIDE-Star",
+        data,
+        borderColor: "#10b981",
+        backgroundColor: "rgba(16, 185, 129, 0.2)",
+        pointBackgroundColor: "#10b981",
+        borderWidth: 2,
+        pointRadius: 4,
+      }],
+    },
+    options: radarChartOptions(),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Limit Order Book & Order Flow
+// ---------------------------------------------------------------------------
+async function loadLOB() {
+  const ticker = state.lobTicker || document.getElementById("lob-ticker").value.toUpperCase() || "SPY";
+  document.getElementById("lob-ticker").value = ticker;
+  state.lobTicker = ticker;
+  try {
+    const data = await getJSON(`/api/v1/market/lob?ticker=${encodeURIComponent(ticker)}`);
+    if (data.error) throw new Error(data.error);
+    document.getElementById("lob-mid").textContent = data.mid != null ? data.mid.toFixed(2) : "-";
+    document.getElementById("lob-spread").textContent = data.spread_bps != null ? `${data.spread_bps} bps` : "-";
+    document.getElementById("lob-bid-depth").textContent = data.bid_depth || "-";
+    document.getElementById("lob-ask-depth").textContent = data.ask_depth || "-";
+    document.getElementById("lob-imbalance").textContent = data.imbalance != null ? `${(data.imbalance * 100).toFixed(2)}%` : "-";
+    const maxSize = Math.max(data.total_depth || 0, 1);
+    renderLOBLadder(data.bids || [], data.asks || [], data.mid || 0, maxSize);
+    renderLOBFlow(data.flow || []);
+  } catch (err) {
+    document.getElementById("lob-ladder").innerHTML = `<p class="message error">${err.message}</p>`;
+    document.getElementById("lob-flow").innerHTML = '<p class="message">No flow data.</p>';
+  }
+}
+
+function renderLOBLadder(bids, asks, mid, maxSize) {
+  const ladder = document.getElementById("lob-ladder");
+  let html = '<div class="lob-header"><div></div><div>Price</div><div></div></div>';
+  for (let i = asks.length - 1; i >= 0; i--) {
+    const a = asks[i];
+    const pct = Math.min(100, (a.size / maxSize) * 100);
+    html += `
+      <div class="lob-row">
+        <div></div>
+        <div class="lob-price">${a.price.toFixed(2)}</div>
+        <div class="lob-size"><div style="display:flex;align-items:center;justify-content:flex-end;gap:8px"><div style="width:${pct}%;max-width:80%;background:var(--danger);height:10px;border-radius:3px;opacity:.7"></div><span>${a.size}</span></div></div>
+      </div>`;
+  }
+  html += `<div class="lob-row mid"><div></div><div class="lob-price">${mid.toFixed(2)}</div><div></div></div>`;
+  for (let i = 0; i < bids.length; i++) {
+    const b = bids[i];
+    const pct = Math.min(100, (b.size / maxSize) * 100);
+    html += `
+      <div class="lob-row">
+        <div class="lob-size"><div style="display:flex;align-items:center;justify-content:flex-start;gap:8px"><span>${b.size}</span><div style="width:${pct}%;max-width:80%;background:var(--accent-2);height:10px;border-radius:3px;opacity:.7"></div></div></div>
+        <div class="lob-price">${b.price.toFixed(2)}</div>
+        <div></div>
+      </div>`;
+  }
+  ladder.innerHTML = html;
+}
+
+function renderLOBFlow(flow) {
+  const container = document.getElementById("lob-flow");
+  if (!flow.length) {
+    container.innerHTML = '<p class="message">No flow data.</p>';
+    return;
+  }
+  container.innerHTML = flow.map((f) => `
+    <div class="lob-flow-row ${f.side}">
+      <span class="lob-side">${f.side.toUpperCase()}</span>
+      <span>${f.size}</span>
+      <span class="lob-price">${f.price.toFixed(2)}</span>
+    </div>
+  `).join("");
 }
 
 init();
