@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://sphere-seminars-trademarks-tba.trycloudflare.com](https://sphere-seminars-trademarks-tba.trycloudflare.com)** (no sign-in)
+**[Live Dashboard — https://louis-gloves-actual-gmt.trycloudflare.com](https://louis-gloves-actual-gmt.trycloudflare.com)** (no sign-in)
 
 </div>
 
