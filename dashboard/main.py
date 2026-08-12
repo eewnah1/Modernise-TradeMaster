@@ -2,15 +2,18 @@
 
 import json
 import os
+import shutil
 import sys
 import tempfile
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import pandas as pd
 import yaml
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Request, Query
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -25,7 +28,8 @@ CONFIG_ROOT = REPO_ROOT / "config" / "input_config"
 DATA_ROOT = REPO_ROOT / "data" / "data"
 EXPERIMENT_ROOT = REPO_ROOT / "experiment"
 
-app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.1.0")
+app = FastAPI(title="Modernise-TradeMaster Dashboard", version="0.2.0")
+START_TIME = time.time()
 
 WORK_ROOT = Path(tempfile.gettempdir()) / "mtm_dashboard_jobs"
 job_manager = JobManager(work_root=WORK_ROOT, repo_root=REPO_ROOT)
@@ -44,8 +48,13 @@ async def health():
     return {
         "status": "ok",
         "active_jobs": sum(1 for j in job_manager.jobs.values() if j["status"] == "running"),
+        "version": app.version,
     }
 
+
+# ---------------------------------------------------------------------------
+# Catalog endpoints
+# ---------------------------------------------------------------------------
 
 @app.get("/api/v1/agents")
 async def list_agents() -> List[Dict[str, Any]]:
@@ -125,6 +134,99 @@ async def list_experiment_scripts() -> List[Dict[str, Any]]:
                             )
     return sorted(scripts, key=lambda x: (x["task"], x["agent"]))
 
+
+# ---------------------------------------------------------------------------
+# System & resource endpoints
+# ---------------------------------------------------------------------------
+
+def _read_mem_gb() -> Dict[str, float]:
+    try:
+        with open("/proc/meminfo") as f:
+            lines = f.readlines()
+
+        def val(key: str) -> float:
+            line = next((l for l in lines if l.startswith(key)), "")
+            return int(line.split()[1]) / (1024 * 1024) if line else 0.0
+
+        return {"total_gb": round(val("MemTotal"), 2), "available_gb": round(val("MemAvailable"), 2)}
+    except Exception:
+        return {"total_gb": 0.0, "available_gb": 0.0}
+
+
+def _read_disk_gb() -> Dict[str, float]:
+    try:
+        du = shutil.disk_usage(str(REPO_ROOT))
+        return {"total_gb": round(du.total / 1e9, 1), "free_gb": round(du.free / 1e9, 1)}
+    except Exception:
+        return {"total_gb": 0.0, "free_gb": 0.0}
+
+
+def _read_load() -> Dict[str, float]:
+    try:
+        one, five, fifteen = os.getloadavg()
+        return {"1m": round(one, 2), "5m": round(five, 2), "15m": round(fifteen, 2)}
+    except Exception:
+        return {}
+
+
+@app.get("/api/v1/system")
+async def system_stats() -> Dict[str, Any]:
+    """Runtime health of the dashboard host."""
+    return {
+        "platform": "Modernise-TradeMaster Dashboard",
+        "version": app.version,
+        "uptime_seconds": round(time.time() - START_TIME, 1),
+        "memory_gb": _read_mem_gb(),
+        "disk": _read_disk_gb(),
+        "load": _read_load(),
+    }
+
+
+def _resolve_repo_file(root: Path, rel: str) -> Path:
+    """Resolve a path that may be stored relative to REPO_ROOT by stripping the root prefix."""
+    try:
+        prefix = str(root.relative_to(REPO_ROOT)) + "/"
+    except ValueError:
+        prefix = ""
+    if prefix and rel.startswith(prefix):
+        rel = rel[len(prefix):]
+    target = (root / rel).resolve()
+    if not str(target).startswith(str(root.resolve())):
+        raise HTTPException(status_code=400, detail="path outside allowed directory")
+    if not target.exists():
+        raise HTTPException(status_code=404, detail="file not found")
+    return target
+
+
+@app.get("/api/v1/config")
+async def read_config(path: str = Query(..., description="config path relative to repo")) -> Any:
+    """Read a YAML config file under config/input_config."""
+    target = _resolve_repo_file(CONFIG_ROOT, path)
+    try:
+        return yaml.safe_load(target.read_text()) or {}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"failed to parse config: {exc}")
+
+
+@app.get("/api/v1/datasets/preview")
+async def preview_dataset(path: str = Query(..., description="dataset path relative to repo"), rows: int = Query(20, ge=1, le=200)) -> Dict[str, Any]:
+    """Return a CSV preview (columns + head rows)."""
+    target = _resolve_repo_file(DATA_ROOT, path)
+    try:
+        df = pd.read_csv(target, nrows=rows)
+        return {
+            "path": path,
+            "columns": list(df.columns),
+            "rows": df.head(rows).to_dict(orient="records"),
+            "shape": [df.shape[0], df.shape[1]],
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"failed to read dataset: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Job endpoints
+# ---------------------------------------------------------------------------
 
 @app.post("/api/v1/jobs/demo")
 async def start_demo_job(payload: dict):
@@ -207,12 +309,30 @@ async def list_jobs():
 
 
 @app.get("/api/v1/jobs/{job_id}")
-async def get_job(job_id: str):
+async def get_job(job_id: str, tail: int = Query(200, ge=0, le=5000)):
     job = job_manager.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
-    job["log"] = job_manager.read_log(job_id)
+    job["log"] = job_manager.read_log(job_id, tail=tail)
     return job
+
+
+@app.get("/api/v1/jobs/{job_id}/tail")
+async def tail_job_log(job_id: str, lines: int = Query(100, ge=1, le=5000)):
+    return {"job_id": job_id, "log": job_manager.read_log(job_id, tail=lines)}
+
+
+@app.get("/api/v1/jobs/{job_id}/files")
+async def list_job_files(job_id: str):
+    return {"job_id": job_id, "files": job_manager.list_files(job_id)}
+
+
+@app.get("/api/v1/jobs/{job_id}/files/{name}")
+async def read_job_file(job_id: str, name: str):
+    content = job_manager.read_file(job_id, name)
+    if content is None:
+        raise HTTPException(status_code=404, detail="file not found or not readable")
+    return PlainTextResponse(content)
 
 
 @app.post("/api/v1/jobs/{job_id}/stop")
@@ -231,9 +351,26 @@ async def delete_job(job_id: str):
     return {"status": "deleted"}
 
 
+# ---------------------------------------------------------------------------
+# Results endpoints
+# ---------------------------------------------------------------------------
+
+def _compute_drawdown(equity: List[Dict[str, Any]]) -> List[float]:
+    """Return percentage drawdown series from equity curve."""
+    peak = 0.0
+    out = []
+    for r in equity:
+        eq = float(r.get("equity", 0))
+        if eq > peak:
+            peak = eq
+        dd = (eq / peak - 1.0) * 100 if peak > 0 else 0.0
+        out.append(round(dd, 4))
+    return out
+
+
 @app.get("/api/v1/jobs/{job_id}/results")
 async def get_results(job_id: str) -> Dict[str, Any]:
-    """Read metrics, equity curve and trades from a completed demo job."""
+    """Read metrics, equity curve, trades and output files from a completed job."""
     job = job_manager.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="job not found")
@@ -245,18 +382,22 @@ async def get_results(job_id: str) -> Dict[str, Any]:
 
     equity = []
     if (work_dir / "equity.csv").exists():
-        import pandas as pd
         df = pd.read_csv(work_dir / "equity.csv")
         equity = df.to_dict(orient="records")
 
     trades = []
     trades_path = work_dir / "trades.csv"
     if trades_path.exists() and trades_path.stat().st_size > 0:
-        import pandas as pd
         tdf = pd.read_csv(trades_path)
-        trades = tdf.head(200).to_dict(orient="records")
+        trades = tdf.head(500).to_dict(orient="records")
 
-    return {"metrics": metrics, "equity": equity, "trades": trades}
+    return {
+        "metrics": metrics,
+        "equity": equity,
+        "trades": trades,
+        "drawdown": _compute_drawdown(equity),
+        "files": job_manager.list_files(job_id),
+    }
 
 
 if __name__ == "__main__":

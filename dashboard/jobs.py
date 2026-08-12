@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -37,7 +37,7 @@ class JobManager:
 
         meta_record = {
             "type": job_type,
-            "created": datetime.utcnow().isoformat() + "Z",
+            "created": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "command": command,
             **meta,
         }
@@ -89,13 +89,42 @@ class JobManager:
         job["status"] = "success" if returncode == 0 else "error"
         job["finished"] = time.time()
 
-    def read_log(self, job_id: str) -> str:
+    def read_log(self, job_id: str, tail: Optional[int] = None) -> str:
         job = self.jobs.get(job_id)
         if not job:
             return ""
         out = job["log_path"].read_text(errors="replace") if job["log_path"].exists() else ""
         err = job["err_path"].read_text(errors="replace") if job["err_path"].exists() else ""
-        return out + "\n" + err
+        text = out + "\n" + err
+        if tail:
+            lines = text.splitlines()
+            return "\n".join(lines[-tail:])
+        return text
+
+    def list_files(self, job_id: str) -> List[dict]:
+        job = self.jobs.get(job_id)
+        if not job:
+            return []
+        wd = Path(job["work_dir"])
+        if not wd.exists():
+            return []
+        return [
+            {"name": f.name, "size": f.stat().st_size}
+            for f in sorted(wd.iterdir())
+            if f.is_file()
+        ]
+
+    def read_file(self, job_id: str, name: str) -> Optional[str]:
+        job = self.jobs.get(job_id)
+        if not job:
+            return None
+        wd = Path(job["work_dir"]).resolve()
+        target = (wd / name).resolve()
+        if not str(target).startswith(str(wd)) or not target.exists():
+            return None
+        if target.suffix.lower() in {".pth", ".pt", ".bin", ".pickle", ".pkl"}:
+            return None
+        return target.read_text(errors="replace")
 
     def list_jobs(self) -> List[dict]:
         result = []
@@ -120,6 +149,7 @@ class JobManager:
             "finished": job["finished"],
             "returncode": job["returncode"],
             "work_dir": str(job["work_dir"]),
+            "files": self.list_files(job_id),
         }
 
     async def stop(self, job_id: str):
