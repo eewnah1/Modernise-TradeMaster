@@ -197,7 +197,7 @@ button { cursor: pointer; border: none; padding: 10px 16px; border-radius: var(-
 .secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
 .secondary:hover { background: var(--panel-3); }
 .danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.25); }
-danger:hover { background: rgba(239, 68, 68, 0.25); }
+.danger:hover { background: rgba(239, 68, 68, 0.25); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
