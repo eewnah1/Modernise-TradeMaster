@@ -26,6 +26,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
   - [External Data Source](#external-data-source)
   - [How to Use Your Own Data](#how-to-use-your-own-data)
   - [File Structure](#file-structure)
+  - [Dashboard](#dashboard)
   - [Publications](#publications)
   - [Contact](#contact)
   - [Join Us](#join-us)
@@ -265,9 +266,27 @@ Modernise-TradeMaster is intentionally built as a modular base platform for RL-d
 
 To add a new data source, implement a small loader under `data_extensions/` (see `data_extensions/README.md`) and wire it into your experiment config. The platform standardizes on OHLCV inputs and expects a `pandas.DataFrame` with `date`, `open`, `high`, `low`, `close`, `volume` columns.
 
+## Dashboard
+
+A full FastAPI-based control dashboard is provided in `dashboard/`.
+
+```bash
+pip install -r dashboard/requirements.txt
+python -m uvicorn dashboard.main:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://localhost:8000` and use the tabs to:
+
+- Browse agents, environments, datasets, and experiment scripts from the existing `config/`, `data/data/`, and `experiment/` directories.
+- Launch a runnable Q-learning demo on any CSV with a `close` column.
+- Launch existing experiment scripts as background jobs and stream logs.
+- Monitor job status, view results, and render an equity curve + trade table.
+
+The dashboard is intentionally decoupled from the core engine: it runs experiments as subprocess jobs, so you can replace the demo strategy with your own RL training scripts without touching the UI.
+
 ## Attribution
 
-Modernise-TradeMaster is an independent modernisation and extension of the original open-source Modernise-TradeMaster RL-for-trading platform. Original contributors are acknowledged in `NOTICE.md`.
+Modernise-TradeMaster is an independent modernisation and extension of the original open-source TradeMaster RL-for-trading platform. Original contributors are acknowledged in `NOTICE.md`.
 
 ## Contact
 
