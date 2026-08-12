@@ -270,6 +270,8 @@ To add a new data source, implement a small loader under `data_extensions/` (see
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
+**Live public dashboard:** https://sphere-seminars-trademarks-tba.trycloudflare.com
+
 ```bash
 pip install -r dashboard/requirements.txt
 python -m uvicorn dashboard.main:app --host 0.0.0.0 --port 8000
