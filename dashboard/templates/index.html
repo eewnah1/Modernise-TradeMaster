@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modernise-TradeMaster Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <h1>Modernise-TradeMaster</h1>
+    <p class="tagline">RL-for-Trading Base Platform</p>
+    <nav>
+      <button class="nav-btn active" data-tab="home">Home</button>
+      <button class="nav-btn" data-tab="setup">Experiment Setup</button>
+      <button class="nav-btn" data-tab="jobs">Jobs & Logs</button>
+      <button class="nav-btn" data-tab="results">Results</button>
+    </nav>
+    <div id="status-pill" class="status ok">loading...</div>
+  </div>
+
+  <main>
+    <section id="home" class="tab active">
+      <h2>Welcome</h2>
+      <p>This dashboard controls the Modernise-TradeMaster reinforcement-learning platform.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>What is Reinforcement Learning?</h3>
+          <p>An <strong>agent</strong> learns a policy by interacting with a market <strong>environment</strong>, receiving rewards (profit/loss), and improving decisions over episodes to maximize long-term return.</p>
+        </div>
+        <div class="card">
+          <h3>Platform modules</h3>
+          <ul>
+            <li><strong>Agents</strong> — DQN, PPO, SAC, SARL, EIIE, DeepScalper and more</li>
+            <li><strong>Environments</strong> — Algorithmic Trading, Order Execution, Portfolio Management</li>
+            <li><strong>Data Extensions</strong> — pluggable OHLCV loaders under <code>data_extensions/</code></li>
+            <li><strong>Experiments</strong> — train, validate, backtest and visualize</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="setup" class="tab">
+      <h2>Experiment Setup</h2>
+
+      <div class="panel">
+        <h3>Quick Q-Learning Demo</h3>
+        <p>Run a trainable Q-table agent on any CSV dataset with a <code>close</code> column. This proves the dashboard pipeline end-to-end.</p>
+        <label>Dataset</label>
+        <select id="demo-data"></select>
+        <div class="row">
+          <div>
+            <label>Episodes</label>
+            <input type="number" id="demo-episodes" value="200" min="10" />
+          </div>
+          <div>
+            <label>Learning rate</label>
+            <input type="number" id="demo-lr" value="0.1" step="0.01" />
+          </div>
+          <div>
+            <label>Epsilon</label>
+            <input type="number" id="demo-eps" value="0.1" step="0.01" />
+          </div>
+          <div>
+            <label>Gamma</label>
+            <input type="number" id="demo-gamma" value="0.9" step="0.01" />
+          </div>
+        </div>
+        <button id="run-demo" class="primary">Run Q-Learning Demo</button>
+        <div id="demo-message" class="message"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Real Experiment Runner</h3>
+        <p>Select an existing experiment script under <code>experiment/</code>. The dashboard will execute it as a background job and stream the output.</p>
+        <label>Experiment script</label>
+        <select id="exp-script"></select>
+        <button id="run-experiment" class="primary">Run Experiment Script</button>
+        <div id="exp-message" class="message"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Configs & Datasets</h3>
+        <div class="row">
+          <div class="half">
+            <h4>Agents</h4>
+            <ul id="agent-list" class="compact-list"></ul>
+          </div>
+          <div class="half">
+            <h4>Environments</h4>
+            <ul id="env-list" class="compact-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="jobs" class="tab">
+      <h2>Jobs & Logs</h2>
+      <button id="refresh-jobs" class="secondary">Refresh</button>
+      <div id="jobs-container"></div>
+      <div class="log-box">
+        <h3>Selected job log</h3>
+        <pre id="job-log">Select a job to view its log.</pre>
+      </div>
+    </section>
+
+    <section id="results" class="tab">
+      <h2>Results</h2>
+      <p>Select a completed demo job to see metrics, equity curve and trades.</p>
+      <label>Job</label>
+      <select id="result-job"><option value="">-- choose a job --</option></select>
+      <div id="metrics" class="metrics"></div>
+      <div class="chart-wrap">
+        <canvas id="equity-chart"></canvas>
+      </div>
+      <h3>Trade Log</h3>
+      <table id="trade-table">
+        <thead><tr><th>Step</th><th>Action</th><th>Price</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
