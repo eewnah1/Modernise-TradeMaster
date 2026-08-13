@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://chan-alike-doctor-register.trycloudflare.com](https://chan-alike-doctor-register.trycloudflare.com)** (no sign-in)
+**[Live Dashboard — https://entered-pioneer-andrews-jon.trycloudflare.com](https://entered-pioneer-andrews-jon.trycloudflare.com)** (no sign-in)
 
 </div>
 
@@ -49,7 +49,7 @@ Modernise-TradeMaster could be beneficial to a wide range of communities includi
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
-**Live public dashboard:** https://chan-alike-doctor-register.trycloudflare.com
+**Live public dashboard:** https://entered-pioneer-andrews-jon.trycloudflare.com
 
 ```bash
 pip install -r dashboard/requirements.txt
