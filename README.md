@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://giant-comics-yell.loca.lt](https://giant-comics-yell.loca.lt)** (no sign-in)
+**[Live Dashboard — https://gkpwqfnikepw6plkzpzczdfu64.srv.us](https://gkpwqfnikepw6plkzpzczdfu64.srv.us)** (no sign-in)
 
 </div>
 
@@ -49,7 +49,7 @@ Modernise-TradeMaster could be beneficial to a wide range of communities includi
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
-**Live public dashboard:** https://giant-comics-yell.loca.lt
+**Live public dashboard:** https://gkpwqfnikepw6plkzpzczdfu64.srv.us
 
 ```bash
 pip install -r dashboard/requirements.txt
