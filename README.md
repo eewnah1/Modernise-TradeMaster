@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://cruz-dayton-certificates-snow.trycloudflare.com](https://cruz-dayton-certificates-snow.trycloudflare.com)** (no sign-in)
+**[Live Dashboard — https://deutsche-passenger-vienna-mai.trycloudflare.com](https://deutsche-passenger-vienna-mai.trycloudflare.com)** (no sign-in)
 
 </div>
 
@@ -49,7 +49,7 @@ Modernise-TradeMaster could be beneficial to a wide range of communities includi
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
-**Live public dashboard:** https://cruz-dayton-certificates-snow.trycloudflare.com
+**Live public dashboard:** https://deutsche-passenger-vienna-mai.trycloudflare.com
 
 ```bash
 pip install -r dashboard/requirements.txt
