@@ -14,7 +14,7 @@ It covers the full pipeline for the design, implementation, evaluation and deplo
 
 <div align="center">
 
-**[Live Dashboard — https://wicked-jokes-occur.loca.lt](https://wicked-jokes-occur.loca.lt)** (no sign-in)
+**[Live Dashboard — https://knowledgestorm-association-airplane-revolutionary.trycloudflare.com](https://knowledgestorm-association-airplane-revolutionary.trycloudflare.com)** (no sign-in)
 
 </div>
 
@@ -49,7 +49,7 @@ Modernise-TradeMaster could be beneficial to a wide range of communities includi
 
 A full FastAPI-based control dashboard is provided in `dashboard/`.
 
-**Live public dashboard:** https://wicked-jokes-occur.loca.lt
+**Live public dashboard:** https://knowledgestorm-association-airplane-revolutionary.trycloudflare.com
 
 ```bash
 pip install -r dashboard/requirements.txt
