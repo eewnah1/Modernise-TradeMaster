@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: modernise-trademaster
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    rootDir: ""
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
